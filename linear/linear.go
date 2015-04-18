@@ -9,13 +9,13 @@ import (
 
 // An Interval is defined by a min and a max value.
 type Interval struct {
-	Min int
-	Max int
+	Min float64
+	Max float64
 }
 
 // NewInterval returns a new Interval between min and max.
 // If min is bigger than max it returns Interval{0,0}
-func NewInterval(min, max int) Interval {
+func NewInterval(min, max float64) Interval {
 	if max < min {
 		return Interval{}
 	}
