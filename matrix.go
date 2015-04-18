@@ -8,14 +8,16 @@ import (
 
 type matrix [][]float64
 
-func (pm *matrix) String() {
+func (pm *matrix) String() string {
 	m := *pm
+	var ret string
 	for i := 0; i < len(m); i++ {
 		for j := 0; j < len(m[i]); j++ {
-			fmt.Printf("%4.2f\t", m[i][j])
+			ret += fmt.Sprintf("%4.2f\t", m[i][j])
 		}
-		fmt.Println()
+		ret += fmt.Sprintln()
 	}
+	return ret
 }
 
 func (pm *matrix) Inverse() (matrix, error) {
