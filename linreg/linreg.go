@@ -20,8 +20,8 @@ import (
 // Noise parameter between 0 and 1 will simulate noise by flipping the sign of the output in a random Noise%.
 type LinearRegression struct {
 	Name                 string          // the name of this linear regression, empty by default.
-	TrainingPoints       int             // number of training points
-	NVal                 int             // number of examples to use in validation
+	TrainingPoints       int             // number of training points.
+	ValidationPoints     int             // number of validation point.
 	RandomTargetFunction bool            // flag to know if target function is generated at random or defined by user.
 	TwoParams            bool            // flag to know if target function takes two parameters
 	Noise                float64         // noise should be bwtn 0 and 1 with 1 meaning all noise and 0 meaning no noise at all.
@@ -202,7 +202,7 @@ func (linreg *LinearRegression) InitializeValidationFromData(data [][]float64) e
 		numberOfLines++
 
 	}
-	linreg.NVal = numberOfLines
+	linreg.ValidationPoints = numberOfLines
 	return nil
 }
 
@@ -218,7 +218,7 @@ func (linreg *LinearRegression) ApplyTransformation() {
 }
 
 func (linreg *LinearRegression) ApplyTransformationOnValidation() {
-	for i := 0; i < linreg.NVal; i++ {
+	for i := 0; i < linreg.ValidationPoints; i++ {
 		Xtrans := linreg.TransformFunction(linreg.XVal[i])
 		linreg.XVal[i] = Xtrans
 	}
