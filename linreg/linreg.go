@@ -596,20 +596,22 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 	return nil
 }
 
-// CompareInSample will compare the current hypothesis function learn by linear regression whith respect to 'f'
-func (linreg *LinearRegression) CompareInSample(f linear.Function, nParams int) float64 {
+// CompareInSample returns the number of points that are different between
+// the current hypothesis function learned by the linear regression with respect to
+// 'f', the linear function passed as param.
+func (lr *LinearRegression) CompareInSample(f linear.Function, nParams int) float64 {
 
-	gInSample := make([]float64, len(linreg.Xn))
-	fInSample := make([]float64, len(linreg.Xn))
+	gInSample := make([]float64, len(lr.Xn))
+	fInSample := make([]float64, len(lr.Xn))
 
-	for i := 0; i < len(linreg.Xn); i++ {
+	for i := 0; i < len(lr.Xn); i++ {
 		gi := float64(0)
-		for j := 0; j < len(linreg.Xn[0]); j++ {
-			gi += linreg.Xn[i][j] * linreg.Wn[j]
+		for j := 0; j < len(lr.Xn[0]); j++ {
+			gi += lr.Xn[i][j] * lr.Wn[j]
 		}
 		gInSample[i] = ml.Sign(gi)
 		if nParams == 1 || nParams == 2 {
-			fInSample[i] = f(linreg.Xn[i][1:])
+			fInSample[i] = f(lr.Xn[i][1:])
 		} else {
 			log.Println("case not supported")
 		}
@@ -617,31 +619,34 @@ func (linreg *LinearRegression) CompareInSample(f linear.Function, nParams int) 
 
 	// measure difference:
 	diff := 0
-	for i := 0; i < len(linreg.Xn); i++ {
+	for i := 0; i < len(lr.Xn); i++ {
 		if gInSample[i] != fInSample[i] {
 			diff++
 		}
 	}
-	return float64(diff) / float64(len(linreg.Xn))
+	return float64(diff) / float64(len(lr.Xn))
 }
 
-// CompareOutOfSample will compare the current hypothesis function learn by linear regression whith respect to 'f' out of sample
-func (linreg *LinearRegression) CompareOutOfSample(f linear.Function, nParams int) float64 {
+// CompareOutOfSample returns the number of points that are different between the
+// current hypothesis function learned by the linear regression with respect to
+// 'f', the linear function passed as paral. The comparison is made on out of sample points
+// generated randomly in the defined interval.
+func (lr *LinearRegression) CompareOutOfSample(f linear.Function, nParams int) float64 {
 
 	outOfSample := 1000
 	diff := 0
 
 	for i := 0; i < outOfSample; i++ {
 		//var oY int
-		oX := make([]float64, linreg.VectorSize)
+		oX := make([]float64, lr.VectorSize)
 		oX[0] = float64(1)
 		for j := 1; j < len(oX); j++ {
-			oX[j] = linreg.Interval.RandFloat()
+			oX[j] = lr.Interval.RandFloat()
 		}
 
 		gi := float64(0)
 		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * linreg.Wn[j]
+			gi += oX[j] * lr.Wn[j]
 		}
 		if nParams == 2 || nParams == 1 {
 			if ml.Sign(gi) != f(oX[1:]) {
@@ -657,16 +662,18 @@ func (linreg *LinearRegression) CompareOutOfSample(f linear.Function, nParams in
 
 type TransformFunc func([]float64) []float64
 
-func (linreg *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
-	for i := 0; i < len(linreg.Xn); i++ {
-		oldXn := linreg.Xn[i]
+// TransformDataSet modifies Xn with the transformed function 'f' and updates the
+// size of vector Wn.
+func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
+	for i := 0; i < len(lr.Xn); i++ {
+		oldXn := lr.Xn[i]
 		newXn := f(oldXn)
-		linreg.Xn[i] = make([]float64, newSize)
+		lr.Xn[i] = make([]float64, newSize)
 		for j := 0; j < len(newXn); j++ {
-			linreg.Xn[i][j] = newXn[j]
+			lr.Xn[i][j] = newXn[j]
 		}
 	}
-	linreg.Wn = make([]float64, newSize)
+	lr.Wn = make([]float64, newSize)
 }
 
 // evaluate will map function f in point p with respect to the current y point.
@@ -696,15 +703,15 @@ func evaluateTwoParams(f linear.Function, p []float64) float64 {
 
 // String returns the string representation of the current
 // random function and the current data hold by vectors Xn, Yn and Wn.
-func (linreg *LinearRegression) String() string {
+func (lr *LinearRegression) String() string {
 	var ret string
-	ret = linreg.Equation.String()
-	for i := 0; i < linreg.TrainingPoints; i++ {
-		ret += fmt.Sprint("X: %v", linreg.Xn[i])
-		ret += fmt.Sprintln("\t Y: %v", linreg.Yn[i])
+	ret = lr.Equation.String()
+	for i := 0; i < lr.TrainingPoints; i++ {
+		ret += fmt.Sprint("X: %v", lr.Xn[i])
+		ret += fmt.Sprintln("\t Y: %v", lr.Yn[i])
 	}
 	ret += fmt.Sprintln()
-	ret += fmt.Sprintln("W: %v", linreg.Wn)
+	ret += fmt.Sprintln("W: %v", lr.Wn)
 	return ret
 }
 
