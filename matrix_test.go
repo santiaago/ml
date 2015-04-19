@@ -54,10 +54,64 @@ func TestIdentity(t *testing.T) {
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
 				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
 			} else if len(tt.err) == 0 {
-				t.Errorf("test %d: Transpose got error %v", i, err)
+				t.Errorf("test %d: Identity got error %v", i, err)
 			}
 		} else if !equal(got, tt.expected) {
 			t.Errorf("test %d: Transpose got %v want %v", i, got, tt.expected)
+		}
+	}
+
+}
+
+func TestScalar(t *testing.T) {
+
+	tests := []struct {
+		l        float64
+		m        Matrix
+		expected Matrix
+		err      string
+	}{
+		{
+			l: 3,
+			m: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			expected: Matrix{
+				{3, 0, 0},
+				{0, 3, 0},
+				{0, 0, 3},
+			},
+		},
+		{
+			l: 2,
+			m: Matrix{
+				{1, 1},
+				{1, 1},
+			},
+			expected: Matrix{
+				{2, 2},
+				{2, 2},
+			},
+		},
+		{
+			l:        10,
+			m:        Matrix{{1}},
+			expected: Matrix{{10}},
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := tt.m.Scalar(tt.l); err != nil {
+
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("test %d: Scalar got error %v", i, err)
+			}
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %d: Scalar got %v want %v", i, got, tt.expected)
 		}
 	}
 

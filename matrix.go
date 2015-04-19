@@ -8,18 +8,6 @@ import (
 
 type Matrix [][]float64
 
-func Identity(n int) (Matrix, error) {
-	if n <= 0 {
-		return nil, fmt.Errorf("Identity: dimention 'n' must be greater than '0'")
-	}
-	ID := make([][]float64, n)
-	for i := 0; i < n; i++ {
-		ID[i] = make([]float64, n)
-		ID[i][i] = 1
-	}
-	return ID, nil
-}
-
 func (pm *Matrix) String() string {
 	m := *pm
 	var ret string
@@ -32,6 +20,7 @@ func (pm *Matrix) String() string {
 	return ret
 }
 
+// Transpose returns the transposed matrix.
 func (pm *Matrix) Transpose() (Matrix, error) {
 	m := *pm
 
@@ -48,6 +37,24 @@ func (pm *Matrix) Transpose() (Matrix, error) {
 	return t, nil
 }
 
+// Scalar returns the scalar multiplication of the Matrix to l.
+func (pm *Matrix) Scalar(l float64) (Matrix, error) {
+	m := *pm
+
+	r := make([][]float64, len(m))
+	for i := 0; i < len(m[0]); i++ {
+		r[i] = make([]float64, len(m[0]))
+	}
+
+	for i := 0; i < len(m); i++ {
+		for j := 0; j < len(m[0]); j++ {
+			r[i][j] = m[i][j] * l
+		}
+	}
+	return r, nil
+}
+
+// Product returns the matrix product between a and b.
 func (pa *Matrix) Product(b Matrix) (Matrix, error) {
 	a := *pa
 
@@ -178,4 +185,16 @@ func lupDecomposition(A Matrix) (Matrix, []int, error) {
 		}
 	}
 	return A, pi, nil
+}
+
+func Identity(n int) (Matrix, error) {
+	if n <= 0 {
+		return nil, fmt.Errorf("Identity: dimention 'n' must be greater than '0'")
+	}
+	ID := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		ID[i] = make([]float64, n)
+		ID[i][i] = 1
+	}
+	return ID, nil
 }
