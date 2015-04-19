@@ -3,6 +3,7 @@
 *.a
 *.so
 *~
+*.out
 
 # Folders
 _obj
