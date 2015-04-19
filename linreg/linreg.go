@@ -285,63 +285,74 @@ func (lr *LinearRegression) Learn() error {
 	return nil
 }
 
-func (linreg *LinearRegression) setWeight(d ml.Matrix) {
+// setWeight updates the weights Wn of the given linear regression.
+// The weighs are updated by computing Wn = dagger * Yn
+// todo(santiaago): change this to Wn = d[i]*Yn
+func (lr *LinearRegression) setWeight(d ml.Matrix) {
+
+	lr.Wn = make([]float64, lr.VectorSize)
 
 	for i := 0; i < len(d); i++ {
 		for j := 0; j < len(d[0]); j++ {
-			linreg.Wn[i] += d[i][j] * linreg.Yn[j]
+			lr.Wn[i] += d[i][j] * lr.Yn[j]
 		}
 	}
 }
 
-// set Wreg
-func (linreg *LinearRegression) setWeightReg(d ml.Matrix) {
+// setWeightReg updates the weights WReg of the given linear regression.
+// The weights are updated by computing WReg = dagger * Yn
+// todo(santiaago): change this to WReg = d[i]*Yn
+func (lr *LinearRegression) setWeightReg(d ml.Matrix) {
 
-	linreg.WReg = make([]float64, linreg.VectorSize)
+	lr.WReg = make([]float64, lr.VectorSize)
 
 	for i := 0; i < len(d); i++ {
 		for j := 0; j < len(d[0]); j++ {
-			linreg.WReg[i] += d[i][j] * linreg.Yn[j]
+			lr.WReg[i] += d[i][j] * lr.Yn[j]
 		}
 	}
 }
 
-// Ein is the fraction of in sample points which got misclassified.
-func (linreg *LinearRegression) Ein() float64 {
+// Ein returns the in sample error of the current linear regression model.
+// It is the fraction of in sample points which got misclassified.
+// todo(santiaago): change this to gi = d[i]*Yn
+func (lr *LinearRegression) Ein() float64 {
+
 	// XnWn
-	gInSample := make([]float64, len(linreg.Xn))
-	for i := 0; i < len(linreg.Xn); i++ {
+	gInSample := make([]float64, len(lr.Xn))
+	for i := 0; i < len(lr.Xn); i++ {
 		gi := float64(0)
-		for j := 0; j < len(linreg.Xn[0]); j++ {
-			gi += linreg.Xn[i][j] * linreg.Wn[j]
+		for j := 0; j < len(lr.Xn[0]); j++ {
+			gi += lr.Xn[i][j] * lr.Wn[j]
 		}
 		gInSample[i] = ml.Sign(gi)
 	}
+
 	nEin := 0
 	for i := 0; i < len(gInSample); i++ {
-		if gInSample[i] != linreg.Yn[i] {
+		if gInSample[i] != lr.Yn[i] {
 			nEin++
 		}
 	}
 	return float64(nEin) / float64(len(gInSample))
-
 }
 
 // EAug is the fraction of in sample points which got misclassified plus the term
 // lambda / N * Sum(Wi^2)
-func (linreg *LinearRegression) EAugIn() float64 {
+// todo(santiaago): change this to use vector vector.
+func (lr *LinearRegression) EAugIn() float64 {
 
-	gInSample := make([]float64, len(linreg.Xn))
-	for i := 0; i < len(linreg.Xn); i++ {
+	gInSample := make([]float64, len(lr.Xn))
+	for i := 0; i < len(lr.Xn); i++ {
 		gi := float64(0)
-		for j := 0; j < len(linreg.Xn[0]); j++ {
-			gi += linreg.Xn[i][j] * linreg.WReg[j]
+		for j := 0; j < len(lr.Xn[0]); j++ {
+			gi += lr.Xn[i][j] * lr.WReg[j]
 		}
 		gInSample[i] = ml.Sign(gi)
 	}
 	nEin := 0
 	for i := 0; i < len(gInSample); i++ {
-		if gInSample[i] != linreg.Yn[i] {
+		if gInSample[i] != lr.Yn[i] {
 			nEin++
 		}
 	}
@@ -349,19 +360,21 @@ func (linreg *LinearRegression) EAugIn() float64 {
 	return float64(nEin) / float64(len(gInSample))
 }
 
-func (linreg *LinearRegression) EValIn() float64 {
+// EValIn returns the in sample error of the Validation points.
+// It is the fraction of misclassified points present in the Validation set XVal.
+func (lr *LinearRegression) EValIn() float64 {
 
-	gInSample := make([]float64, len(linreg.XVal))
-	for i := 0; i < len(linreg.XVal); i++ {
+	gInSample := make([]float64, len(lr.XVal))
+	for i := 0; i < len(lr.XVal); i++ {
 		gi := float64(0)
-		for j := 0; j < len(linreg.XVal[0]); j++ {
-			gi += linreg.XVal[i][j] * linreg.Wn[j]
+		for j := 0; j < len(lr.XVal[0]); j++ {
+			gi += lr.XVal[i][j] * lr.Wn[j]
 		}
 		gInSample[i] = ml.Sign(gi)
 	}
 	nEin := 0
 	for i := 0; i < len(gInSample); i++ {
-		if gInSample[i] != linreg.YVal[i] {
+		if gInSample[i] != lr.YVal[i] {
 			nEin++
 		}
 	}
@@ -369,48 +382,41 @@ func (linreg *LinearRegression) EValIn() float64 {
 	return float64(nEin) / float64(len(gInSample))
 }
 
-// Eout is the fraction of out of sample points which got misclassified.
-func (linreg *LinearRegression) Eout() float64 {
+// Eout returns the out of sample error.
+// It is the fraction of out of sample points which got misclassified.
+// It generates 1000 out of sample points and classifies them.
+func (lr *LinearRegression) Eout() float64 {
 	outOfSample := 1000
 	numError := 0
 
 	for i := 0; i < outOfSample; i++ {
-		var oY float64
-		oX := make([]float64, linreg.VectorSize)
-		oX[0] = float64(1)
+		oX := make([]float64, lr.VectorSize)
+		oX[0] = 1
 		for j := 1; j < len(oX); j++ {
-			oX[j] = linreg.Interval.RandFloat()
+			oX[j] = lr.Interval.RandFloat()
 		}
-		flip := float64(1)
-		if linreg.Noise != 0 {
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			rN := r.Intn(100)
-			if rN < int(math.Ceil(linreg.Noise*100)) {
-				flip = float64(-1)
-			}
-		}
+
 		// output with potential noise in 'flip' variable
-		if !linreg.TwoParams {
-			oY = evaluate(linreg.TargetFunction, oX) * flip
-		} else {
-			oY = evaluateTwoParams(linreg.TargetFunction, oX) * flip
-		}
+		var oY float64
+		oY = evaluate(lr.TargetFunction, oX) * lr.flip()
 
-		gi := float64(0)
+		var gi float64
+
 		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * linreg.Wn[j]
+			gi += oX[j] * lr.Wn[j]
 		}
 
-		if ml.Sign(gi) != float64(oY) {
+		if ml.Sign(gi) != oY {
 			numError++
 		}
 	}
 	return float64(numError) / float64(outOfSample)
 }
 
-// EoutFromFile only supports linear regressions with transformed data.
+// EoutFromFile returns error in the out of sample data provided in the file.
+//  It only supports linear regressions with transformed data.
 // todo:(santiaago) make this more generic.
-func (linreg *LinearRegression) EoutFromFile(filename string) (float64, error) {
+func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -419,7 +425,7 @@ func (linreg *LinearRegression) EoutFromFile(filename string) (float64, error) {
 	defer file.Close()
 
 	numError := 0
-	numberOfLines := 0
+	n := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		split := strings.Split(scanner.Text(), " ")
@@ -430,48 +436,43 @@ func (linreg *LinearRegression) EoutFromFile(filename string) (float64, error) {
 				line = append(line, cell)
 			}
 		}
-		var oY int
-		var oX1, oX2 float64
 
-		if x1, err := strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", numberOfLines, filename)
+		var oX1, oX2, oY float64
+
+		if oX1, err = strconv.ParseFloat(line[0], 64); err != nil {
+			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
-		} else {
-			oX1 = x1
-		}
-		if x2, err := strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", numberOfLines, filename)
-			return 0, err
-		} else {
-			oX2 = x2
 		}
 
-		oX := linreg.TransformFunction([]float64{float64(1), oX1, oX2})
-
-		if y, err := strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", numberOfLines, filename)
+		if oX2, err = strconv.ParseFloat(line[1], 64); err != nil {
+			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
-		} else {
-			oY = int(y)
 		}
 
-		gi := float64(0)
+		if oY, err = strconv.ParseFloat(line[2], 64); err != nil {
+			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
+			return 0, err
+		}
+
+		oX := lr.TransformFunction([]float64{1, oX1, oX2})
+
+		var gi float64
 		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * linreg.Wn[j]
+			gi += oX[j] * lr.Wn[j]
 		}
-		if ml.Sign(gi) != float64(oY) {
+		if ml.Sign(gi) != oY {
 			numError++
 		}
-		numberOfLines++
+		n++
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return float64(numError) / float64(numberOfLines), nil
+	return float64(numError) / float64(n), nil
 }
 
-// Ein is the fraction of in sample points which got misclassified.
+// EAugOutFromFile returns the augmented error from an out of sample file
 func (linreg *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 
 	file, err := os.Open(filename)
