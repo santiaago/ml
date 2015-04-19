@@ -27,18 +27,18 @@ type LinearRegression struct {
 	Noise                float64         // Noise should be bwtn 0 and 1, 1 means all noise, 0 means no noise at all, default 0.
 	Interval             linear.Interval // Interval in which the points, outputs and function are defined.
 	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
-	TargetFunction       linear.Function // target function
-	TransformFunction    TransformFunc   // transform function
-	UsesTranformFunction bool            // determines if linear regression used transform function.
-	Xn                   [][]float64     // data set of random points (uniformly in interval)
-	XVal                 [][]float64     // data set for validation
-	VectorSize           int             // size of vectors Xi and Wi
+	TargetFunction       linear.Function // linear target function to predict.
+	TransformFunction    TransformFunc   // transformation function.
+	Transform            bool            // determines if linear regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
+	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly present in Interval).
+	XVal                 [][]float64     // data set of point  for validation.
+	VectorSize           int             // size of vectors Xi and Wi.
 	Yn                   []float64       // output, evaluation of each Xi based on linear function.
 	YVal                 []float64       // output, for validation
 	Wn                   []float64       // weight vector initialized at zeros.
-	WReg                 []float64       // weight vector with regularization
-	Lambda               float64         // used in weight decay
-	K                    int             // used in weight decay
+	WReg                 []float64       // weight vector with regularization.
+	Lambda               float64         // used in weight decay.
+	K                    int             // used in weight decay.
 }
 
 // NewLinearRegression creates a linear regression object.
@@ -207,7 +207,7 @@ func (linreg *LinearRegression) InitializeValidationFromData(data [][]float64) e
 }
 
 func (linreg *LinearRegression) ApplyTransformation() {
-	linreg.UsesTranformFunction = true
+	linreg.Transform = true
 
 	for i := 0; i < linreg.TrainingPoints; i++ {
 		Xtrans := linreg.TransformFunction(linreg.Xn[i])
