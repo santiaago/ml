@@ -197,39 +197,50 @@ func (lr *LinearRegression) InitializeFromData(data [][]float64) error {
 	return nil
 }
 
-func (linreg *LinearRegression) InitializeValidationFromData(data [][]float64) error {
+// InitializeValidationFromData reads a 2 dimentional array with the following format:
+// x1 x2 y
+// x1 x2 y
+// x1 x2 y
+// And sets XVal and YVal accordingly
+func (lr *LinearRegression) InitializeValidationFromData(data [][]float64) error {
 
-	linreg.YVal = make([]float64, len(data))
-	linreg.XVal = make([][]float64, len(data))
-	numberOfLines := 0
+	lr.YVal = make([]float64, len(data))
+	lr.XVal = make([][]float64, len(data))
+	n := 0
 	for i, sample := range data {
 
-		linreg.XVal[i] = make([]float64, len(sample))
-		linreg.XVal[i] = []float64{float64(1), sample[0], sample[1]}
+		lr.XVal[i] = make([]float64, len(sample))
+		lr.XVal[i] = []float64{1, sample[0], sample[1]}
 
-		linreg.YVal[i] = sample[2]
-		numberOfLines++
+		lr.YVal[i] = sample[2]
+		n++
 
 	}
-	linreg.ValidationPoints = numberOfLines
+	lr.ValidationPoints = n
+
 	return nil
 }
 
-func (linreg *LinearRegression) ApplyTransformation() {
-	linreg.Transform = true
+// ApplyTransformation sets Transform flag to true
+// and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
+// It Sets Wn size to the size of Xtrans.
+func (lr *LinearRegression) ApplyTransformation() {
+	lr.Transform = true
 
-	for i := 0; i < linreg.TrainingPoints; i++ {
-		Xtrans := linreg.TransformFunction(linreg.Xn[i])
-		linreg.Xn[i] = Xtrans
+	for i := 0; i < lr.TrainingPoints; i++ {
+		Xtrans := lr.TransformFunction(lr.Xn[i])
+		lr.Xn[i] = Xtrans
 	}
-	linreg.VectorSize = len(linreg.Xn[0])
-	linreg.Wn = make([]float64, linreg.VectorSize)
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
 }
 
-func (linreg *LinearRegression) ApplyTransformationOnValidation() {
-	for i := 0; i < linreg.ValidationPoints; i++ {
-		Xtrans := linreg.TransformFunction(linreg.XVal[i])
-		linreg.XVal[i] = Xtrans
+// ApplyTransformationOnValidation transforms the XVal vector into
+// XValtrans = TransformationFunction(XVal)
+func (lr *LinearRegression) ApplyTransformationOnValidation() {
+	for i := 0; i < lr.ValidationPoints; i++ {
+		Xtrans := lr.TransformFunction(lr.XVal[i])
+		lr.XVal[i] = Xtrans
 	}
 }
 
