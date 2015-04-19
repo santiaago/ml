@@ -169,29 +169,30 @@ func (lr *LinearRegression) InitializeFromFile(filename string) error {
 	return nil
 }
 
-// InitializeFromData reads a file with the following format:
+// InitializeFromData reads a 2 dimentional array with the following format:
 // x1 x2 y
 // x1 x2 y
 // x1 x2 y
 // And sets Xn and Yn accordingly
-func (linreg *LinearRegression) InitializeFromData(data [][]float64) error {
+func (lr *LinearRegression) InitializeFromData(data [][]float64) error {
 
-	numberOfLines := 0
-	linreg.Yn = make([]float64, len(data))
-	linreg.Xn = make([][]float64, len(data))
+	n := 0
+	lr.Yn = make([]float64, len(data))
+	lr.Xn = make([][]float64, len(data))
+
 	for i, sample := range data {
 
-		linreg.Xn[i] = make([]float64, len(sample))
-		linreg.Xn[i] = []float64{float64(1)}
-		linreg.Xn[i] = append(linreg.Xn[i], sample[:len(sample)-1]...)
+		lr.Xn[i] = make([]float64, len(sample))
+		lr.Xn[i] = []float64{1}
+		lr.Xn[i] = append(lr.Xn[i], sample[:len(sample)-1]...)
 
-		linreg.Yn[i] = sample[len(sample)-1]
-		numberOfLines++
+		lr.Yn[i] = sample[len(sample)-1]
+		n++
 	}
 
-	linreg.TrainingPoints = numberOfLines
-	linreg.VectorSize = len(linreg.Xn[0])
-	linreg.Wn = make([]float64, linreg.VectorSize)
+	lr.TrainingPoints = n
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
 
 	return nil
 }
