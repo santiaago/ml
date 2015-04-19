@@ -34,7 +34,27 @@ func (pm *Matrix) Transpose() (Matrix, error) {
 		}
 	}
 	return t, nil
+}
 
+func (pa *Matrix) Product(b Matrix) (Matrix, error) {
+	a := *pa
+
+	if len(a) != len(b[0]) {
+		return nil, fmt.Errorf("Product: number of cols in 'a' must be equal to the number of rows in 'b'.")
+	}
+	p := make([][]float64, len(b[0]))
+	for i := 0; i < len(b[0]); i++ {
+		p[i] = make([]float64, len(b[0]))
+	}
+
+	for k := 0; k < len(b[0]); k++ {
+		for i := 0; i < len(a); i++ {
+			for j := 0; j < len(a[0]); j++ {
+				p[i][k] += a[i][j] * b[j][k]
+			}
+		}
+	}
+	return p, nil
 }
 
 func (pm *Matrix) Inverse() (Matrix, error) {

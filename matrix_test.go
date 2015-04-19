@@ -102,6 +102,124 @@ func TestTranspose(t *testing.T) {
 
 }
 
+func TestProduct(t *testing.T) {
+	tests := []struct {
+		a        Matrix
+		b        Matrix
+		expected Matrix
+		err      string
+	}{
+		{
+			a: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+			b: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+			expected: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		},
+		{
+			a: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+			b: Matrix{
+				{0, 0},
+				{0, 0},
+				{0, 0},
+			},
+			expected: Matrix{
+				{0, 0},
+				{0, 0},
+			},
+		},
+		{
+			a: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			b: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			expected: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+		},
+		{
+			a: Matrix{
+				{4, 2},
+				{3, 2},
+			},
+			b: Matrix{
+				{4, 3},
+				{2, 2},
+			},
+			expected: Matrix{
+				{20, 16},
+				{16, 13},
+			},
+		},
+		{
+			a: Matrix{
+				{4, 7},
+				{2, 6},
+				{1, 3},
+				{0, 1},
+			},
+			b: Matrix{
+				{4, 2, 1, 0},
+				{7, 6, 3, 1},
+			},
+			expected: Matrix{
+				{65, 50, 25, 7},
+				{50, 40, 20, 6},
+				{25, 20, 10, 3},
+				{7, 6, 3, 1},
+			},
+		},
+		{
+			a: Matrix{
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			b: Matrix{
+				{1, 1, 1, 1},
+				{1, 1, 1, 1},
+				{1, 1, 1, 1},
+				{1, 1, 1, 1},
+			},
+			err: "Product",
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := tt.a.Product(tt.b); err != nil {
+
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("test %d: Product got error %v", i, err)
+			}
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %d: Transpose got %v want %v", i, got, tt.expected)
+		}
+	}
+
+}
+
 func TestInverse(t *testing.T) {
 
 	tests := []struct {
