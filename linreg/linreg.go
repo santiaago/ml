@@ -19,8 +19,8 @@ import (
 // LinearRegression holds all the information needed to run the LinearRegression algorithm.
 // Noise parameter between 0 and 1 will simulate noise by flipping the sign of the output in a random Noise%.
 type LinearRegression struct {
-	Name                 string          // discribes what this linear regression does. Empty by default
-	N                    int             // number of training points
+	Name                 string          // the name of this linear regression, empty by default.
+	TrainingPoints       int             // number of training points
 	NVal                 int             // number of examples to use in validation
 	RandomTargetFunction bool            // flag to know if target function is generated at random or defined by user.
 	TwoParams            bool            // flag to know if target function takes two parameters
@@ -49,7 +49,7 @@ type LinearRegression struct {
 // VectorSize = 3
 func NewLinearRegression() *LinearRegression {
 	linreg := LinearRegression{
-		N:                    10,                        // default training points is 10
+		TrainingPoints:       10,                        // default training points is 10
 		Interval:             linear.NewInterval(-1, 1), // default interval is [-1, 1]
 		RandomTargetFunction: true,                      // default RandomTargetFunction is true
 		Noise:                0,                         // default noise is 0
@@ -71,14 +71,14 @@ func (linreg *LinearRegression) Initialize() {
 		linreg.TargetFunction = linreg.TargetVars.Function()
 	}
 
-	linreg.Xn = make([][]float64, linreg.N)
-	for i := 0; i < linreg.N; i++ {
+	linreg.Xn = make([][]float64, linreg.TrainingPoints)
+	for i := 0; i < linreg.TrainingPoints; i++ {
 		linreg.Xn[i] = make([]float64, linreg.VectorSize)
 	}
-	linreg.Yn = make([]float64, linreg.N)
+	linreg.Yn = make([]float64, linreg.TrainingPoints)
 	linreg.Wn = make([]float64, linreg.VectorSize)
 
-	for i := 0; i < linreg.N; i++ {
+	for i := 0; i < linreg.TrainingPoints; i++ {
 		linreg.Xn[i][0] = float64(1)
 		for j := 1; j < len(linreg.Xn[i]); j++ {
 			linreg.Xn[i][j] = linreg.Interval.RandFloat()
@@ -151,7 +151,7 @@ func (linreg *LinearRegression) InitializeFromFile(filename string) error {
 
 		numberOfLines++
 	}
-	linreg.N = numberOfLines
+	linreg.TrainingPoints = numberOfLines
 	linreg.VectorSize = len(linreg.Xn[0])
 	linreg.Wn = make([]float64, linreg.VectorSize)
 
@@ -181,7 +181,7 @@ func (linreg *LinearRegression) InitializeFromData(data [][]float64) error {
 		numberOfLines++
 	}
 
-	linreg.N = numberOfLines
+	linreg.TrainingPoints = numberOfLines
 	linreg.VectorSize = len(linreg.Xn[0])
 	linreg.Wn = make([]float64, linreg.VectorSize)
 
@@ -209,7 +209,7 @@ func (linreg *LinearRegression) InitializeValidationFromData(data [][]float64) e
 func (linreg *LinearRegression) ApplyTransformation() {
 	linreg.UsesTranformFunction = true
 
-	for i := 0; i < linreg.N; i++ {
+	for i := 0; i < linreg.TrainingPoints; i++ {
 		Xtrans := linreg.TransformFunction(linreg.Xn[i])
 		linreg.Xn[i] = Xtrans
 	}
@@ -687,7 +687,7 @@ func evaluateTwoParams(f linear.Function, p []float64) float64 {
 func (linreg *LinearRegression) String() string {
 	var ret string
 	ret = linreg.TargetVars.String()
-	for i := 0; i < linreg.N; i++ {
+	for i := 0; i < linreg.TrainingPoints; i++ {
 		ret += fmt.Sprint("X: %v", linreg.Xn[i])
 		ret += fmt.Sprintln("\t Y: %v", linreg.Yn[i])
 	}
