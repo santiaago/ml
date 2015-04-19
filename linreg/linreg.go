@@ -245,56 +245,42 @@ func (lr *LinearRegression) ApplyTransformationOnValidation() {
 }
 
 // Learn will compute the pseudo inverse X dager and set W vector accordingly
-// Xdager = (X'X)^-1 X'
+// XDagger = (X'X)^-1 X'
 func (lr *LinearRegression) Learn() error {
 
+	var err error
+
 	// compute X' <=> X transpose
+	var mXn ml.Matrix = lr.Xn
+	var mXT ml.Matrix
 
-	XTranspose := make([][]float64, len(lr.Xn[0]))
-	for i := 0; i < len(lr.Xn[0]); i++ {
-		XTranspose[i] = make([]float64, len(lr.Xn))
-	}
-
-	for i := 0; i < len(XTranspose); i++ {
-		for j := 0; j < len(XTranspose[0]); j++ {
-			XTranspose[i][j] = lr.Xn[j][i]
-		}
+	if mXT, err = mXn.Transpose(); err != nil {
+		log.Println("unable to make transpose, %v", err)
+		return err
 	}
 
 	// compute the product of X' and X
-	XProduct := make([][]float64, len(lr.Xn[0]))
-	for i := 0; i < len(lr.Xn[0]); i++ {
-		XProduct[i] = make([]float64, len(lr.Xn[0]))
-	}
-	for k := 0; k < len(lr.Xn[0]); k++ {
-		for i := 0; i < len(XTranspose); i++ {
-			for j := 0; j < len(XTranspose[0]); j++ {
-				XProduct[i][k] += XTranspose[i][j] * lr.Xn[j][k]
-			}
-		}
+	var mXP ml.Matrix
+	if mXP, err = mXT.Product(mXn); err != nil {
+		log.Println("unable to make matrix product, %v", err)
+		return err
 	}
 
 	// inverse XProduct
-	mXin := ml.Matrix(XProduct)
-	Xinv, err := mXin.Inverse()
-	if err != nil {
+	var mXInv ml.Matrix
+	if mXInv, err = mXP.Inverse(); err != nil {
+		log.Println("unable to compute matrix inverse, %v", err)
 		return err
 	}
 
 	// compute product: (X'X)^-1 X'
-	XDagger := make([][]float64, len(XProduct))
-	for i := 0; i < len(XProduct); i++ {
-		XDagger[i] = make([]float64, len(XTranspose[0]))
-	}
-	for k := 0; k < len(XTranspose[0]); k++ {
-		for i := 0; i < len(Xinv); i++ {
-			for j := 0; j < len(Xinv[0]); j++ {
-				XDagger[i][k] += Xinv[i][j] * XTranspose[j][k]
-			}
-		}
+	var XDagger ml.Matrix
+	if XDagger, err = mXInv.Product(mXT); err != nil {
+		log.Println("unable to compute XDagger, %v", err)
+		return err
 	}
 
-	lr.setWeight(ml.Matrix(XDagger))
+	lr.setWeight(XDagger)
 
 	return nil
 }
