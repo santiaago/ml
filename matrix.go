@@ -8,6 +8,18 @@ import (
 
 type Matrix [][]float64
 
+func Identity(n int) (Matrix, error) {
+	if n <= 0 {
+		return nil, fmt.Errorf("Identity: dimention 'n' must be greater than '0'")
+	}
+	ID := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		ID[i] = make([]float64, n)
+		ID[i][i] = 1
+	}
+	return ID, nil
+}
+
 func (pm *Matrix) String() string {
 	m := *pm
 	var ret string

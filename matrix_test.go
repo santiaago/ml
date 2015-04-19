@@ -10,6 +10,59 @@ var (
 	epsilon float64 = 0.001
 )
 
+func TestIdentity(t *testing.T) {
+
+	tests := []struct {
+		n        int
+		expected Matrix
+		err      string
+	}{
+		{
+			n: 3,
+			expected: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+		},
+		{
+			n: 2,
+			expected: Matrix{
+				{1, 0},
+				{0, 1},
+			},
+		},
+		{
+			n: 1,
+			expected: Matrix{
+				{1},
+			},
+		},
+		{
+			n:   0,
+			err: "greater than",
+		},
+		{
+			n:   -1,
+			err: "greater than",
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := Identity(tt.n); err != nil {
+
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("test %d: Transpose got error %v", i, err)
+			}
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %d: Transpose got %v want %v", i, got, tt.expected)
+		}
+	}
+
+}
+
 func TestTranspose(t *testing.T) {
 	tests := []struct {
 		m        Matrix
