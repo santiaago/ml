@@ -20,6 +20,23 @@ func (pm *Matrix) String() string {
 	return ret
 }
 
+func (pm *Matrix) Transpose() (Matrix, error) {
+	m := *pm
+
+	t := make([][]float64, len(m[0]))
+	for i := 0; i < len(m[0]); i++ {
+		t[i] = make([]float64, len(m))
+	}
+
+	for i := 0; i < len(t); i++ {
+		for j := 0; j < len(t[0]); j++ {
+			t[i][j] = m[j][i]
+		}
+	}
+	return t, nil
+
+}
+
 func (pm *Matrix) Inverse() (Matrix, error) {
 	m := *pm
 	n := len(m)

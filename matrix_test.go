@@ -10,6 +10,98 @@ var (
 	epsilon float64 = 0.001
 )
 
+func TestTranspose(t *testing.T) {
+	tests := []struct {
+		m        Matrix
+		expected Matrix
+		err      string
+	}{
+		{
+			m: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+			expected: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		},
+		{
+			m: Matrix{
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+			expected: Matrix{
+				{0, 0},
+				{0, 0},
+				{0, 0},
+			},
+		},
+		{
+			m: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			expected: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+		},
+		{
+			m: Matrix{
+				{4, 2},
+				{3, 2},
+			},
+			expected: Matrix{
+				{4, 3},
+				{2, 2},
+			},
+		},
+		{
+			m: Matrix{
+				{4, 7},
+				{2, 6},
+				{1, 3},
+				{0, 1},
+			},
+			expected: Matrix{
+				{4, 2, 1, 0},
+				{7, 6, 3, 1},
+			},
+		},
+		{
+			m: Matrix{
+				{1, 2, 3},
+				{0, 1, 4},
+				{5, 6, 0},
+			},
+			expected: Matrix{
+				{1, 0, 5},
+				{2, 1, 6},
+				{3, 4, 0},
+			},
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := tt.m.Transpose(); err != nil {
+
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("test %d: Transpose got error %v", i, err)
+			}
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %d: Transpose got %v want %v", i, got, tt.expected)
+		}
+	}
+
+}
+
 func TestInverse(t *testing.T) {
 
 	tests := []struct {
