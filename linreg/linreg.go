@@ -112,15 +112,18 @@ func (lr *LinearRegression) flip() float64 {
 // x1 x2 y
 // x1 x2 y
 // And sets Xn and Yn accordingly
-func (linreg *LinearRegression) InitializeFromFile(filename string) error {
+// todo(santiaago): make function accept any number of points and 'y'.
+func (lr *LinearRegression) InitializeFromFile(filename string) error {
+
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	numberOfLines := 0
+	n := 0
 	for scanner.Scan() {
 		split := strings.Split(scanner.Text(), " ")
 		var line []string
@@ -131,39 +134,37 @@ func (linreg *LinearRegression) InitializeFromFile(filename string) error {
 			}
 		}
 
-		newX := make([]float64, 0)
-		newX = append(newX, float64(1))
+		var x1, x2, y float64
 
-		if x1, err := strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", numberOfLines, filename)
+		if x1, err = strconv.ParseFloat(line[0], 64); err != nil {
+			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return err
-		} else {
-			newX = append(newX, x1)
-		}
-		if x2, err := strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", numberOfLines, filename)
-			return err
-		} else {
-			newX = append(newX, x2)
-		}
-		if y, err := strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", numberOfLines, filename)
-			return err
-		} else {
-
-			linreg.Yn = append(linreg.Yn, y)
 		}
 
-		linreg.Xn = append(linreg.Xn, newX)
+		if x2, err = strconv.ParseFloat(line[1], 64); err != nil {
+			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
+			return err
+		}
 
-		numberOfLines++
+		if y, err = strconv.ParseFloat(line[2], 64); err != nil {
+			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
+			return err
+		}
+
+		newX := []float64{1, x1, x2}
+		lr.Xn = append(lr.Xn, newX)
+		lr.Yn = append(lr.Yn, y)
+
+		n++
 	}
-	linreg.TrainingPoints = numberOfLines
-	linreg.VectorSize = len(linreg.Xn[0])
-	linreg.Wn = make([]float64, linreg.VectorSize)
+
+	lr.TrainingPoints = n
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
+		return err
 	}
 	return nil
 }
