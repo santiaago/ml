@@ -54,6 +54,7 @@ func (pm *Matrix) Scalar(l float64) (Matrix, error) {
 	return r, nil
 }
 
+// Add returns the matrix addition between a and b.
 func (pa *Matrix) Add(b Matrix) (Matrix, error) {
 	a := *pa
 	if len(a) != len(b) || len(a[0]) != len(b[0]) {

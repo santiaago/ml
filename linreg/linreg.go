@@ -534,71 +534,65 @@ func (linreg *LinearRegression) EAugOutFromFile(filename string) (float64, error
 // EReg
 // (Z'Z+λI)^−1 * Z'
 // WReg = (Z'Z + λI)^−1 Z'y
-func (linreg *LinearRegression) LearnWeightDecay() error {
-	linreg.Lambda = math.Pow(10, float64(linreg.K))
+func (lr *LinearRegression) LearnWeightDecay() error {
+	lr.Lambda = math.Pow(10, float64(lr.K))
+
+	var err error
 
 	// compute X' <=> X transpose
-	XTranspose := make([][]float64, len(linreg.Xn[0]))
-	for i := 0; i < len(linreg.Xn[0]); i++ {
-		XTranspose[i] = make([]float64, len(linreg.Xn))
-	}
+	var mX ml.Matrix = lr.Xn
+	var mXT ml.Matrix
 
-	for i := 0; i < len(XTranspose); i++ {
-		for j := 0; j < len(XTranspose[0]); j++ {
-			XTranspose[i][j] = linreg.Xn[j][i]
-		}
+	if mXT, err = mX.Transpose(); err != nil {
+		log.Println("unable to make transpose, %v", err)
+		return err
 	}
 
 	// compute lambda*Identity
-	lambdaIdentity := make([][]float64, len(linreg.Xn[0]))
-	for i := 0; i < len(lambdaIdentity); i++ {
-		lambdaIdentity[i] = make([]float64, len(lambdaIdentity))
-		lambdaIdentity[i][i] = float64(1) * linreg.Lambda
+	var ID ml.Matrix
+	if ID, err = ml.Identity(len(lr.Xn[0])); err != nil {
+		log.Println("unable to make identity matrix, %v", err)
+		return err
+	}
+
+	var mLID ml.Matrix
+
+	if mLID, err = ID.Scalar(lr.Lambda); err != nil {
+		log.Println("unable to make identity matrix, %v", err)
+		return err
 	}
 
 	// compute Z'Z
-	XProduct := make([][]float64, len(linreg.Xn[0]))
-	for i := 0; i < len(linreg.Xn[0]); i++ {
-		XProduct[i] = make([]float64, len(linreg.Xn[0]))
-	}
-	for k := 0; k < len(linreg.Xn[0]); k++ {
-		for i := 0; i < len(XTranspose); i++ {
-			for j := 0; j < len(XTranspose[0]); j++ {
-				XProduct[i][k] += XTranspose[i][j] * linreg.Xn[j][k]
-			}
-		}
+	var mXP ml.Matrix
+	if mXP, err = mXT.Product(mX); err != nil {
+		log.Println("unable to make matrix product, %v", err)
+		return err
 	}
 
 	// compute Z'Z + lambda*I
-	sumMatrix := make([][]float64, len(lambdaIdentity))
-	for i := 0; i < len(sumMatrix); i++ {
-		sumMatrix[i] = make([]float64, len(sumMatrix))
-		for j := 0; j < len(sumMatrix); j++ {
-			sumMatrix[i][j] = XProduct[i][j] + lambdaIdentity[i][j]
-		}
+	var mS ml.Matrix
+	if mS, err = mLID.Add(mXP); err != nil {
+		log.Println("unable to add matrices, %v", err)
+		return err
 	}
 
 	// inverse
-	toInverse := ml.Matrix(sumMatrix)
-	inverseMatrix, err := toInverse.Inverse()
-	if err != nil {
+	var mInv ml.Matrix
+
+	if mInv, err = mS.Inverse(); err != nil {
+		log.Println("unable to compute matrix inverse, %v", err)
 		return err
 	}
+
 	// compute product: inverseMatrix Z'
-	XDagger := make([][]float64, len(sumMatrix))
-	for i := 0; i < len(inverseMatrix); i++ {
-		XDagger[i] = make([]float64, len(XTranspose[0]))
+	var XDagger ml.Matrix
+	if XDagger, err = mInv.Product(mXT); err != nil {
+		log.Println("unable to compute the matrix product, %v", err)
+		return err
 	}
 
-	for k := 0; k < len(XTranspose[0]); k++ {
-		for i := 0; i < len(inverseMatrix); i++ {
-			for j := 0; j < len(inverseMatrix[0]); j++ {
-				XDagger[i][k] += inverseMatrix[i][j] * XTranspose[j][k]
-			}
-		}
-	}
 	// set WReg
-	linreg.setWeightReg(ml.Matrix(XDagger))
+	lr.setWeightReg(XDagger)
 	return nil
 }
 
