@@ -24,9 +24,9 @@ type LinearRegression struct {
 	ValidationPoints     int             // number of validation point.
 	RandomTargetFunction bool            // flag to know if target function is generated at random or defined by user.
 	TwoParams            bool            // flag to know if target function takes two parameters
-	Noise                float64         // noise should be bwtn 0 and 1 with 1 meaning all noise and 0 meaning no noise at all.
-	Interval             linear.Interval // interval  in which the points, outputs and function are defined.
-	TargetVars           linear.Equation // random vars of the random linear function : target function
+	Noise                float64         // Noise should be bwtn 0 and 1, 1 means all noise, 0 means no noise at all, default 0.
+	Interval             linear.Interval // Interval in which the points, outputs and function are defined.
+	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
 	TargetFunction       linear.Function // target function
 	TransformFunction    TransformFunc   // transform function
 	UsesTranformFunction bool            // determines if linear regression used transform function.
@@ -67,8 +67,8 @@ func (linreg *LinearRegression) Initialize() {
 
 	// generate random target function if asked. (this is the default behavior)
 	if linreg.RandomTargetFunction {
-		linreg.TargetVars = linear.RandEquation(linreg.Interval) // create the random vars of the random linear function
-		linreg.TargetFunction = linreg.TargetVars.Function()
+		linreg.Equation = linear.RandEquation(linreg.Interval) // create the random vars of the random linear function
+		linreg.TargetFunction = linreg.Equation.Function()
 	}
 
 	linreg.Xn = make([][]float64, linreg.TrainingPoints)
@@ -686,7 +686,7 @@ func evaluateTwoParams(f linear.Function, p []float64) float64 {
 // random function and the current data hold by vectors Xn, Yn and Wn.
 func (linreg *LinearRegression) String() string {
 	var ret string
-	ret = linreg.TargetVars.String()
+	ret = linreg.Equation.String()
 	for i := 0; i < linreg.TrainingPoints; i++ {
 		ret += fmt.Sprint("X: %v", linreg.Xn[i])
 		ret += fmt.Sprintln("\t Y: %v", linreg.Yn[i])
