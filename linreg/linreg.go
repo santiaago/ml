@@ -17,14 +17,13 @@ import (
 )
 
 // LinearRegression holds all the information needed to run the LinearRegression algorithm.
-// Noise parameter between 0 and 1 will simulate noise by flipping the sign of the output in a random Noise%.
 type LinearRegression struct {
 	Name                 string          // the name of this linear regression, empty by default.
 	TrainingPoints       int             // number of training points.
 	ValidationPoints     int             // number of validation point.
 	RandomTargetFunction bool            // flag to know if target function is generated at random or defined by user.
-	TwoParams            bool            // flag to know if target function takes two parameters
-	Noise                float64         // Noise should be bwtn 0 and 1, 1 means all noise, 0 means no noise at all, default 0.
+	TwoParams            bool            // flag to know if target function takes two parameters.
+	Noise                float64         // Noise should be btwn 0(no noise) and 1(all noise). Will simulate noise by flipping the sign of the output based on the Noise.
 	Interval             linear.Interval // Interval in which the points, outputs and function are defined.
 	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
 	TargetFunction       linear.Function // linear target function to predict.
