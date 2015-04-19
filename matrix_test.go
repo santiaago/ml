@@ -13,12 +13,12 @@ var (
 func TestInverse(t *testing.T) {
 
 	tests := []struct {
-		m        matrix
-		expected matrix
+		m        Matrix
+		expected Matrix
 		err      string
 	}{
 		{
-			m: matrix{
+			m: Matrix{
 				{0, 0, 0},
 				{0, 0, 0},
 				{0, 0, 0},
@@ -26,19 +26,19 @@ func TestInverse(t *testing.T) {
 			err: "singular",
 		},
 		{
-			m: matrix{
+			m: Matrix{
 				{0, 0, 0},
 				{0, 0, 0},
 			},
 			err: "square",
 		},
 		{
-			m: matrix{
+			m: Matrix{
 				{1, 0, 0},
 				{0, 1, 0},
 				{0, 0, 1},
 			},
-			expected: matrix{
+			expected: Matrix{
 				{1, 0, 0},
 				{0, 1, 0},
 				{0, 0, 1},
@@ -46,32 +46,32 @@ func TestInverse(t *testing.T) {
 		},
 
 		{
-			m: matrix{
+			m: Matrix{
 				{4, 3},
 				{3, 2},
 			},
-			expected: matrix{
+			expected: Matrix{
 				{-2, 3},
 				{3, -4},
 			},
 		},
 		{
-			m: matrix{
+			m: Matrix{
 				{4, 7},
 				{2, 6},
 			},
-			expected: matrix{
+			expected: Matrix{
 				{0.6, -0.7},
 				{-0.2, 0.4},
 			},
 		},
 		{
-			m: matrix{
+			m: Matrix{
 				{1, 2, 3},
 				{0, 1, 4},
 				{5, 6, 0},
 			},
-			expected: matrix{
+			expected: Matrix{
 				{-24, 18, 5},
 				{20, -15, -4},
 				{-5, 4, 1},
@@ -95,7 +95,7 @@ func TestInverse(t *testing.T) {
 
 func TestMatrixString(t *testing.T) {
 
-	m := matrix{
+	m := Matrix{
 		{0, 0, 0},
 		{0, 0, 0},
 		{0, 0, 0},
@@ -108,7 +108,7 @@ func TestMatrixString(t *testing.T) {
 	}
 }
 
-func equal(a, b matrix) bool {
+func equal(a, b Matrix) bool {
 	if len(a) != len(b) {
 		return false
 	}

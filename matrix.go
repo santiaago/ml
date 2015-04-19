@@ -6,9 +6,9 @@ import (
 	"math"
 )
 
-type matrix [][]float64
+type Matrix [][]float64
 
-func (pm *matrix) String() string {
+func (pm *Matrix) String() string {
 	m := *pm
 	var ret string
 	for i := 0; i < len(m); i++ {
@@ -20,7 +20,7 @@ func (pm *matrix) String() string {
 	return ret
 }
 
-func (pm *matrix) Inverse() (matrix, error) {
+func (pm *Matrix) Inverse() (Matrix, error) {
 	m := *pm
 	n := len(m)
 	if n != len(m[0]) {
@@ -46,7 +46,7 @@ func (pm *matrix) Inverse() (matrix, error) {
 	return x, nil
 }
 
-func lupSolve(LU matrix, pi []int, b []float64) []float64 {
+func lupSolve(LU Matrix, pi []int, b []float64) []float64 {
 	n := len(LU)
 	x := make([]float64, n)
 	y := make([]float64, n)
@@ -82,7 +82,7 @@ func lupSolve(LU matrix, pi []int, b []float64) []float64 {
 // In order to make some of the calculations more straight forward and to
 // match Cormen's et al. pseudocode the matrix A should have its first row and first columns
 // to be all 0.
-func lupDecomposition(A matrix) (matrix, []int, error) {
+func lupDecomposition(A Matrix) (Matrix, []int, error) {
 
 	n := len(A)
 	// pi is the permutation matrix.
