@@ -246,36 +246,41 @@ func (lr *LinearRegression) ApplyTransformationOnValidation() {
 
 // Learn will compute the pseudo inverse X dager and set W vector accordingly
 // Xdager = (X'X)^-1 X'
-func (linreg *LinearRegression) Learn() error {
+func (lr *LinearRegression) Learn() error {
+
 	// compute X' <=> X transpose
-	XTranspose := make([][]float64, len(linreg.Xn[0]))
-	for i := 0; i < len(linreg.Xn[0]); i++ {
-		XTranspose[i] = make([]float64, len(linreg.Xn))
+
+	XTranspose := make([][]float64, len(lr.Xn[0]))
+	for i := 0; i < len(lr.Xn[0]); i++ {
+		XTranspose[i] = make([]float64, len(lr.Xn))
 	}
 
 	for i := 0; i < len(XTranspose); i++ {
 		for j := 0; j < len(XTranspose[0]); j++ {
-			XTranspose[i][j] = linreg.Xn[j][i]
+			XTranspose[i][j] = lr.Xn[j][i]
 		}
 	}
+
 	// compute the product of X' and X
-	XProduct := make([][]float64, len(linreg.Xn[0]))
-	for i := 0; i < len(linreg.Xn[0]); i++ {
-		XProduct[i] = make([]float64, len(linreg.Xn[0]))
+	XProduct := make([][]float64, len(lr.Xn[0]))
+	for i := 0; i < len(lr.Xn[0]); i++ {
+		XProduct[i] = make([]float64, len(lr.Xn[0]))
 	}
-	for k := 0; k < len(linreg.Xn[0]); k++ {
+	for k := 0; k < len(lr.Xn[0]); k++ {
 		for i := 0; i < len(XTranspose); i++ {
 			for j := 0; j < len(XTranspose[0]); j++ {
-				XProduct[i][k] += XTranspose[i][j] * linreg.Xn[j][k]
+				XProduct[i][k] += XTranspose[i][j] * lr.Xn[j][k]
 			}
 		}
 	}
+
 	// inverse XProduct
 	mXin := ml.Matrix(XProduct)
 	Xinv, err := mXin.Inverse()
 	if err != nil {
 		return err
 	}
+
 	// compute product: (X'X)^-1 X'
 	XDagger := make([][]float64, len(XProduct))
 	for i := 0; i < len(XProduct); i++ {
@@ -288,7 +293,9 @@ func (linreg *LinearRegression) Learn() error {
 			}
 		}
 	}
-	linreg.setWeight(ml.Matrix(XDagger))
+
+	lr.setWeight(ml.Matrix(XDagger))
+
 	return nil
 }
 
