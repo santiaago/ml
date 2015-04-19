@@ -41,60 +41,65 @@ type LinearRegression struct {
 }
 
 // NewLinearRegression creates a linear regression object.
-// N = 10
+// TrainingPoints = 10
 // Interval [-1 : 1]
 // RandomTargetFunction is true
 // Noise = 0
 // VectorSize = 3
 func NewLinearRegression() *LinearRegression {
-	linreg := LinearRegression{
+	lr := LinearRegression{
 		TrainingPoints:       10,                        // default training points is 10
 		Interval:             linear.NewInterval(-1, 1), // default interval is [-1, 1]
 		RandomTargetFunction: true,                      // default RandomTargetFunction is true
 		Noise:                0,                         // default noise is 0
 		VectorSize:           3,                         // default vector size is 3
 	}
-	return &linreg
+	return &lr
 }
 
-// Initialize will set up the PLA structure with the following:
+// Initialize will set up the LinearRegression structure with the following:
 // * the random linear function
-// * vector Xn with X0 at 1 and X1 and X2 random point in the defined input space.
+// * vector Xn with X0 = 1 and X1 and X2 random point in the defined input space.
 // * vector Yn the output of the random linear function on each point Xi. either -1 or +1  based on the linear function.
 // * vector Wn is set to zero.
-func (linreg *LinearRegression) Initialize() {
+func (lr *LinearRegression) Initialize() {
 
-	// generate random target function if asked. (this is the default behavior)
-	if linreg.RandomTargetFunction {
-		linreg.Equation = linear.RandEquation(linreg.Interval) // create the random vars of the random linear function
-		linreg.TargetFunction = linreg.Equation.Function()
+	// generate random target function if asked to
+	if lr.RandomTargetFunction {
+		lr.Equation = linear.RandEquation(lr.Interval)
+		lr.TargetFunction = lr.Equation.Function()
 	}
 
-	linreg.Xn = make([][]float64, linreg.TrainingPoints)
-	for i := 0; i < linreg.TrainingPoints; i++ {
-		linreg.Xn[i] = make([]float64, linreg.VectorSize)
+	lr.Xn = make([][]float64, lr.TrainingPoints)
+	for i := 0; i < lr.TrainingPoints; i++ {
+		lr.Xn[i] = make([]float64, lr.VectorSize)
 	}
-	linreg.Yn = make([]float64, linreg.TrainingPoints)
-	linreg.Wn = make([]float64, linreg.VectorSize)
 
-	for i := 0; i < linreg.TrainingPoints; i++ {
-		linreg.Xn[i][0] = float64(1)
-		for j := 1; j < len(linreg.Xn[i]); j++ {
-			linreg.Xn[i][j] = linreg.Interval.RandFloat()
+	lr.Yn = make([]float64, lr.TrainingPoints)
+	lr.Wn = make([]float64, lr.VectorSize)
+
+	x0 := float64(1)
+	for i := 0; i < lr.TrainingPoints; i++ {
+
+		lr.Xn[i][0] = x0
+
+		for j := 1; j < len(lr.Xn[i]); j++ {
+			lr.Xn[i][j] = lr.Interval.RandFloat()
 		}
+
 		flip := float64(1)
-		if linreg.Noise != 0 {
+		if lr.Noise != 0 {
 			r := rand.New(rand.NewSource(time.Now().UnixNano()))
 			rN := r.Intn(100)
-			if rN < int(math.Ceil(linreg.Noise*100)) {
+			if rN < int(math.Ceil(lr.Noise*100)) {
 				flip = float64(-1)
 			}
 		}
 		// output with potential noise in 'flip' variable
-		if !linreg.TwoParams {
-			linreg.Yn[i] = evaluate(linreg.TargetFunction, linreg.Xn[i]) * flip
+		if !lr.TwoParams {
+			lr.Yn[i] = evaluate(lr.TargetFunction, lr.Xn[i]) * flip
 		} else {
-			linreg.Yn[i] = evaluateTwoParams(linreg.TargetFunction, linreg.Xn[i]) * flip
+			lr.Yn[i] = evaluateTwoParams(lr.TargetFunction, lr.Xn[i]) * flip
 		}
 	}
 }
