@@ -87,21 +87,24 @@ func (lr *LinearRegression) Initialize() {
 			lr.Xn[i][j] = lr.Interval.RandFloat()
 		}
 
-		flip := float64(1)
-		if lr.Noise != 0 {
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			rN := r.Intn(100)
-			if rN < int(math.Ceil(lr.Noise*100)) {
-				flip = float64(-1)
-			}
-		}
 		// output with potential noise in 'flip' variable
-		if !lr.TwoParams {
-			lr.Yn[i] = evaluate(lr.TargetFunction, lr.Xn[i]) * flip
-		} else {
-			lr.Yn[i] = evaluateTwoParams(lr.TargetFunction, lr.Xn[i]) * flip
-		}
+		lr.Yn[i] = evaluate(lr.TargetFunction, lr.Xn[i]) * lr.flip()
 	}
+}
+
+// flip returns 1 or -1 with respect to the amount of Noise present in the linear regression.
+func (lr *LinearRegression) flip() float64 {
+	flip := float64(1)
+	if lr.Noise == 0 {
+		return flip
+	}
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rN := r.Intn(100)
+	if rN < int(math.Ceil(lr.Noise*100)) {
+		flip = float64(-1)
+	}
+	return flip
 }
 
 // InitializeFromFile reads a file with the following format:
@@ -667,9 +670,12 @@ func (linreg *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
 
 // evaluate will map function f in point p with respect to the current y point.
 // if it stands on one side it is +1 else -1
+// vector x is defined as x0, x1 .. , xn, y
+// So linear.Function should take sub vector [x1, ... ,xn]
 // todo: might change name to mapPoint
-func evaluate(f linear.Function, p []float64) float64 {
-	if p[2] < f(p[1:2]) {
+func evaluate(f linear.Function, x []float64) float64 {
+	last := len(x) - 1
+	if x[last] < f(x[1:last]) {
 		return -1
 	}
 	return 1
@@ -679,6 +685,7 @@ func evaluate(f linear.Function, p []float64) float64 {
 // this evaluate version takes 2 parameters instead of a single one.
 // if it stands on one side it is +1 else -1
 // todo: might change name to mapPointTwoParams
+// todo(santiaago): remove
 func evaluateTwoParams(f linear.Function, p []float64) float64 {
 	if p[3] < f(p[1:3]) {
 		return -1
