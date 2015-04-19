@@ -54,12 +54,31 @@ func (pm *Matrix) Scalar(l float64) (Matrix, error) {
 	return r, nil
 }
 
+func (pa *Matrix) Add(b Matrix) (Matrix, error) {
+	a := *pa
+	if len(a) != len(b) || len(a[0]) != len(b[0]) {
+		return nil, fmt.Errorf("Add: both matrices must have same dimensions")
+	}
+
+	r := make([][]float64, len(a))
+	for i := 0; i < len(a[0]); i++ {
+		r[i] = make([]float64, len(a[0]))
+	}
+
+	for i := 0; i < len(a); i++ {
+		for j := 0; j < len(a[0]); j++ {
+			r[i][j] = a[i][j] + b[i][j]
+		}
+	}
+	return r, nil
+}
+
 // Product returns the matrix product between a and b.
 func (pa *Matrix) Product(b Matrix) (Matrix, error) {
 	a := *pa
 
 	if len(a) != len(b[0]) {
-		return nil, fmt.Errorf("Product: number of cols in 'a' must be equal to the number of rows in 'b'.")
+		return nil, fmt.Errorf("Product: number of cols in 'a' must be equal to the number of rows in 'b'")
 	}
 	p := make([][]float64, len(b[0]))
 	for i := 0; i < len(b[0]); i++ {

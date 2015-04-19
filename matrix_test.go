@@ -117,6 +117,77 @@ func TestScalar(t *testing.T) {
 
 }
 
+func TestAdd(t *testing.T) {
+
+	tests := []struct {
+		a        Matrix
+		b        Matrix
+		expected Matrix
+		err      string
+	}{
+		{
+			a: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			b: Matrix{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+			},
+			expected: Matrix{
+				{2, 0, 0},
+				{0, 2, 0},
+				{0, 0, 2},
+			},
+		},
+		{
+			a: Matrix{
+				{1, 1},
+				{1, 1},
+			},
+			b: Matrix{
+				{1, 2},
+				{3, 4},
+			},
+			expected: Matrix{
+				{2, 3},
+				{4, 5},
+			},
+		},
+		{
+			a:        Matrix{{1}},
+			b:        Matrix{{1}},
+			expected: Matrix{{2}},
+		},
+		{
+			a: Matrix{
+				{1, 1},
+				{1, 1},
+			},
+			b: Matrix{
+				{3, 4},
+			},
+			err: "dimensions",
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := tt.a.Add(tt.b); err != nil {
+
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("test %d: Scalar got error %v", i, err)
+			}
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %d: Scalar got %v want %v", i, got, tt.expected)
+		}
+	}
+
+}
+
 func TestTranspose(t *testing.T) {
 	tests := []struct {
 		m        Matrix
