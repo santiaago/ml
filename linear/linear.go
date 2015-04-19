@@ -41,16 +41,16 @@ func RandEquation(i Interval) Equation {
 	return Equation{i.RandFloat(), i.RandFloat()}
 }
 
-// A Function is a linear function that takes a float64 and returns a float64
+// A Function is a linear function that takes an array of float64 and returns a float64
 // f(x) = y
-type Function func(x float64) float64
+type Function func(x []float64) float64
 
 // Function returns a linear function with respect of the defined equation.
 // f(x) = ax + b
 // With a and b defined by Equation
 func (eq *Equation) Function() Function {
-	return func(x float64) float64 {
-		return x*eq.A + eq.B
+	return func(x []float64) float64 {
+		return x[0]*eq.A + eq.B
 	}
 }
 

@@ -37,20 +37,20 @@ func TestEquationFunction(t *testing.T) {
 
 	tests := []struct {
 		eq       Equation
-		param    float64
+		params   []float64
 		expected float64
 	}{
-		{Equation{1, 1}, float64(1), float64(2)},
-		{Equation{1, 0}, float64(1), float64(1)},
-		{Equation{0, 1}, float64(1), float64(1)},
-		{Equation{0, 0}, float64(1), float64(0)},
+		{Equation{1, 1}, []float64{1}, float64(2)},
+		{Equation{1, 0}, []float64{1}, float64(1)},
+		{Equation{0, 1}, []float64{1}, float64(1)},
+		{Equation{0, 0}, []float64{1}, float64(0)},
 	}
 
 	for _, tt := range tests {
 		f := tt.eq.Function()
-		got := f(tt.param)
+		got := f(tt.params)
 		if got != tt.expected {
-			t.Errorf("Equation.Function want f(%v) = %v, got f(%v) = %v", tt.param, tt.expected, tt.param, got)
+			t.Errorf("Equation.Function want f(%v) = %v, got f(%v) = %v", tt.params, tt.expected, tt.params, got)
 		}
 	}
 }
