@@ -255,28 +255,28 @@ func (lr *LinearRegression) Learn() error {
 	var mXT ml.Matrix
 
 	if mXT, err = mXn.Transpose(); err != nil {
-		log.Println("unable to make transpose, %v", err)
+		log.Printf("unable to make transpose, %v\n", err)
 		return err
 	}
 
 	// compute the product of X' and X
 	var mXP ml.Matrix
 	if mXP, err = mXT.Product(mXn); err != nil {
-		log.Println("unable to make matrix product, %v", err)
+		log.Printf("unable to make matrix product, %v\n", err)
 		return err
 	}
 
 	// inverse XProduct
 	var mXInv ml.Matrix
 	if mXInv, err = mXP.Inverse(); err != nil {
-		log.Println("unable to compute matrix inverse, %v", err)
+		log.Printf("unable to compute matrix inverse, %v\n", err)
 		return err
 	}
 
 	// compute product: (X'X)^-1 X'
 	var XDagger ml.Matrix
 	if XDagger, err = mXInv.Product(mXT); err != nil {
-		log.Println("unable to compute XDagger, %v", err)
+		log.Printf("unable to compute XDagger, %v\n", err)
 		return err
 	}
 
@@ -337,7 +337,7 @@ func (lr *LinearRegression) Ein() float64 {
 	return float64(nEin) / float64(len(gInSample))
 }
 
-// EAug is the fraction of in sample points which got misclassified plus the term
+// EAugIn is the fraction of "in sample points" which got misclassified plus the term
 // lambda / N * Sum(Wi^2)
 // todo(santiaago): change this to use vector vector.
 func (lr *LinearRegression) EAugIn() float64 {
@@ -473,7 +473,7 @@ func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 }
 
 // EAugOutFromFile returns the augmented error from an out of sample file
-func (linreg *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
+func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -482,7 +482,7 @@ func (linreg *LinearRegression) EAugOutFromFile(filename string) (float64, error
 	defer file.Close()
 
 	numError := 0
-	numberOfLines := 0
+	n := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		split := strings.Split(scanner.Text(), " ")
@@ -493,45 +493,40 @@ func (linreg *LinearRegression) EAugOutFromFile(filename string) (float64, error
 				line = append(line, cell)
 			}
 		}
-		var oY int
+		var oY float64
 		var oX1, oX2 float64
 
-		if x1, err := strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", numberOfLines, filename)
+		if oX1, err = strconv.ParseFloat(line[0], 64); err != nil {
+			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
-		} else {
-			oX1 = x1
-		}
-		if x2, err := strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", numberOfLines, filename)
-			return 0, err
-		} else {
-			oX2 = x2
 		}
 
-		oX := linreg.TransformFunction([]float64{float64(1), oX1, oX2})
-
-		if y, err := strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", numberOfLines, filename)
+		if oX2, err = strconv.ParseFloat(line[1], 64); err != nil {
+			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
-		} else {
-			oY = int(y)
+		}
+
+		oX := lr.TransformFunction([]float64{1, oX1, oX2})
+
+		if oY, err = strconv.ParseFloat(line[2], 64); err != nil {
+			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
+			return 0, err
 		}
 
 		gi := float64(0)
 		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * linreg.WReg[j]
+			gi += oX[j] * lr.WReg[j]
 		}
-		if ml.Sign(gi) != float64(oY) {
+		if ml.Sign(gi) != oY {
 			numError++
 		}
-		numberOfLines++
+		n++
 	}
 
-	return float64(numError) / float64(numberOfLines), nil
+	return float64(numError) / float64(n), nil
 }
 
-// EReg
+// LearnWeightDecay computes the following formula and update WReg.
 // (Z'Z+λI)^−1 * Z'
 // WReg = (Z'Z + λI)^−1 Z'y
 func (lr *LinearRegression) LearnWeightDecay() error {
@@ -544,35 +539,35 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 	var mXT ml.Matrix
 
 	if mXT, err = mX.Transpose(); err != nil {
-		log.Println("unable to make transpose, %v", err)
+		log.Printf("unable to make transpose, %v\n", err)
 		return err
 	}
 
 	// compute lambda*Identity
 	var ID ml.Matrix
 	if ID, err = ml.Identity(len(lr.Xn[0])); err != nil {
-		log.Println("unable to make identity matrix, %v", err)
+		log.Printf("unable to make identity matrix, %v\n", err)
 		return err
 	}
 
 	var mLID ml.Matrix
 
 	if mLID, err = ID.Scalar(lr.Lambda); err != nil {
-		log.Println("unable to make identity matrix, %v", err)
+		log.Printf("unable to make identity matrix, %v\n", err)
 		return err
 	}
 
 	// compute Z'Z
 	var mXP ml.Matrix
 	if mXP, err = mXT.Product(mX); err != nil {
-		log.Println("unable to make matrix product, %v", err)
+		log.Printf("unable to make matrix product, %v\n", err)
 		return err
 	}
 
 	// compute Z'Z + lambda*I
 	var mS ml.Matrix
 	if mS, err = mLID.Add(mXP); err != nil {
-		log.Println("unable to add matrices, %v", err)
+		log.Printf("unable to add matrices, %v\n", err)
 		return err
 	}
 
@@ -580,14 +575,14 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 	var mInv ml.Matrix
 
 	if mInv, err = mS.Inverse(); err != nil {
-		log.Println("unable to compute matrix inverse, %v", err)
+		log.Printf("unable to compute matrix inverse, %v\n", err)
 		return err
 	}
 
 	// compute product: inverseMatrix Z'
 	var XDagger ml.Matrix
 	if XDagger, err = mInv.Product(mXT); err != nil {
-		log.Println("unable to compute the matrix product, %v", err)
+		log.Printf("unable to compute the matrix product, %v\n", err)
 		return err
 	}
 
@@ -660,6 +655,7 @@ func (lr *LinearRegression) CompareOutOfSample(f linear.Function, nParams int) f
 	return float64(diff) / float64(outOfSample)
 }
 
+// TransformFunc type is used to define transformation functions.
 type TransformFunc func([]float64) []float64
 
 // TransformDataSet modifies Xn with the transformed function 'f' and updates the
@@ -707,14 +703,15 @@ func (lr *LinearRegression) String() string {
 	var ret string
 	ret = lr.Equation.String()
 	for i := 0; i < lr.TrainingPoints; i++ {
-		ret += fmt.Sprint("X: %v", lr.Xn[i])
-		ret += fmt.Sprintln("\t Y: %v", lr.Yn[i])
+		ret += fmt.Sprintf("X: %v", lr.Xn[i])
+		ret += fmt.Sprintf("\t Y: %v\n", lr.Yn[i])
 	}
 	ret += fmt.Sprintln()
-	ret += fmt.Sprintln("W: %v", lr.Wn)
+	ret += fmt.Sprintf("W: %v\n", lr.Wn)
 	return ret
 }
 
+// LinearRegressionError returns the error defined by:
 // Ed[Ein(wlin)] = sigma^2 (1 - (d + 1)/ N)
 func LinearRegressionError(n int, sigma float64, d int) float64 {
 	return sigma * sigma * (1 - (float64(d+1))/float64(n))
