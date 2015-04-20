@@ -6,6 +6,7 @@ import (
 	"math"
 )
 
+// Matrix is a type to make matrix operations.
 type Matrix [][]float64
 
 func (pm *Matrix) String() string {
@@ -55,8 +56,8 @@ func (pm *Matrix) Scalar(l float64) (Matrix, error) {
 }
 
 // Add returns the matrix addition between a and b.
-func (pa *Matrix) Add(b Matrix) (Matrix, error) {
-	a := *pa
+func (pm *Matrix) Add(b Matrix) (Matrix, error) {
+	a := *pm
 	if len(a) != len(b) || len(a[0]) != len(b[0]) {
 		return nil, fmt.Errorf("Add: both matrices must have same dimensions")
 	}
@@ -75,8 +76,8 @@ func (pa *Matrix) Add(b Matrix) (Matrix, error) {
 }
 
 // Product returns the matrix product between a and b.
-func (pa *Matrix) Product(b Matrix) (Matrix, error) {
-	a := *pa
+func (pm *Matrix) Product(b Matrix) (Matrix, error) {
+	a := *pm
 
 	if len(a) != len(b[0]) {
 		return nil, fmt.Errorf("Product: number of cols in 'a' must be equal to the number of rows in 'b'")
@@ -96,6 +97,7 @@ func (pa *Matrix) Product(b Matrix) (Matrix, error) {
 	return p, nil
 }
 
+// Inverse returns the inverse matrix of the current Matrix if exists.
 func (pm *Matrix) Inverse() (Matrix, error) {
 	m := *pm
 	n := len(m)
@@ -207,6 +209,7 @@ func lupDecomposition(A Matrix) (Matrix, []int, error) {
 	return A, pi, nil
 }
 
+// Identity returns the identity Matrix with dimention n
 func Identity(n int) (Matrix, error) {
 	if n <= 0 {
 		return nil, fmt.Errorf("Identity: dimention 'n' must be greater than '0'")

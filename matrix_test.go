@@ -6,9 +6,7 @@ import (
 	"testing"
 )
 
-var (
-	epsilon float64 = 0.001
-)
+const epsilon float64 = 0.001
 
 func TestIdentity(t *testing.T) {
 
@@ -52,7 +50,7 @@ func TestIdentity(t *testing.T) {
 		if got, err := Identity(tt.n); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Identity got error %v", i, err)
 			}
@@ -106,7 +104,7 @@ func TestScalar(t *testing.T) {
 		if got, err := tt.m.Scalar(tt.l); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Scalar got error %v", i, err)
 			}
@@ -177,7 +175,7 @@ func TestAdd(t *testing.T) {
 		if got, err := tt.a.Add(tt.b); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Scalar got error %v", i, err)
 			}
@@ -269,7 +267,7 @@ func TestTranspose(t *testing.T) {
 		if got, err := tt.m.Transpose(); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Transpose got error %v", i, err)
 			}
@@ -387,7 +385,7 @@ func TestProduct(t *testing.T) {
 		if got, err := tt.a.Product(tt.b); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Product got error %v", i, err)
 			}
@@ -471,7 +469,7 @@ func TestInverse(t *testing.T) {
 		if got, err := tt.m.Inverse(); err != nil {
 
 			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
-				t.Errorf("test %d: got error %v, want ", i, err, tt.err)
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
 			} else if len(tt.err) == 0 {
 				t.Errorf("test %d: Inverse got error %v", i, err)
 			}
