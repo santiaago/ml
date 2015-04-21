@@ -135,3 +135,7 @@ func TestApplyTransformation(t *testing.T) {
 	}
 
 }
+
+func TestApplyTransformationOnValidation(t *testing.T) {
+	// todo(santiaago): test this
+}
