@@ -250,6 +250,94 @@ func TestEin(t *testing.T) {
 	}
 }
 
+func TestEAugIn(t *testing.T) {
+	lr := NewLinearRegression()
+	lr.Xn = [][]float64{
+		{1, 0.1, 0.1},
+		{1, 0.2, 0.2},
+		{1, 0.3, 0.3},
+		{1, 0.4, 0.4},
+		{1, 0.5, 0.5},
+		{1, 0.6, 0.6},
+	}
+
+	tests := []struct {
+		Y              []float64
+		WReg           []float64
+		expectedEAugIn float64
+	}{
+		{
+			[]float64{1, 1, 1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0.5,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{1, 0, 0},
+			1.0,
+		},
+	}
+
+	for _, tt := range tests {
+		lr.Yn = tt.Y
+		lr.WReg = tt.WReg
+		got := lr.EAugIn()
+		want := tt.expectedEAugIn
+		if got != want {
+			t.Errorf("Ein is not correct, got %v, want %v", got, want)
+		}
+	}
+}
+
+func TestEValIn(t *testing.T) {
+	lr := NewLinearRegression()
+	lr.XVal = [][]float64{
+		{1, 0.1, 0.1},
+		{1, 0.2, 0.2},
+		{1, 0.3, 0.3},
+		{1, 0.4, 0.4},
+		{1, 0.5, 0.5},
+		{1, 0.6, 0.6},
+	}
+
+	tests := []struct {
+		YVal           []float64
+		Wn             []float64
+		expectedEValIn float64
+	}{
+		{
+			[]float64{1, 1, 1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0.5,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{1, 0, 0},
+			1.0,
+		},
+	}
+
+	for _, tt := range tests {
+		lr.YVal = tt.YVal
+		lr.Wn = tt.Wn
+		got := lr.EValIn()
+		want := tt.expectedEValIn
+		if got != want {
+			t.Errorf("Ein is not correct, got %v, want %v", got, want)
+		}
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
