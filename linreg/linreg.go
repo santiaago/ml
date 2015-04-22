@@ -291,7 +291,6 @@ func (lr *LinearRegression) Learn() error {
 func (lr *LinearRegression) setWeight(d ml.Matrix) {
 
 	lr.Wn = make([]float64, lr.VectorSize)
-
 	for i := 0; i < len(d); i++ {
 		for j := 0; j < len(d[0]); j++ {
 			lr.Wn[i] += d[i][j] * lr.Yn[j]

@@ -162,6 +162,50 @@ func TestLearn(t *testing.T) {
 	}
 }
 
+func TestSetWeight(t *testing.T) {
+
+	lr := NewLinearRegression()
+	lr.VectorSize = 5
+	lr.Yn = []float64{-1, -1, -1}
+	lr.TrainingPoints = 5
+	d := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+
+	lr.setWeight(d)
+
+	expectedWn := []float64{-3, -3, -3, -3, -3}
+	if !equal(expectedWn, lr.Wn) {
+		t.Errorf("Weight vector is not correct: got %v, want %v", lr.Wn, expectedWn)
+	}
+}
+
+func TestSetWeightReg(t *testing.T) {
+
+	lr := NewLinearRegression()
+	lr.VectorSize = 5
+	lr.Yn = []float64{-1, -1, -1}
+	lr.TrainingPoints = 5
+	d := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+
+	lr.setWeightReg(d)
+
+	expectedWReg := []float64{-3, -3, -3, -3, -3}
+	if !equal(expectedWReg, lr.WReg) {
+		t.Errorf("Weight vector is not correct: got %v, want %v", lr.WReg, expectedWReg)
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
