@@ -106,7 +106,7 @@ func TestInitializeValidationFromData(t *testing.T) {
 func TestApplyTransformation(t *testing.T) {
 
 	tf := func(a []float64) []float64 {
-		for i := 0; i < len(a); i++ {
+		for i := 1; i < len(a); i++ {
 			a[i] = -a[i]
 		}
 		return a
@@ -127,10 +127,13 @@ func TestApplyTransformation(t *testing.T) {
 	lr.ApplyTransformation()
 
 	for i := 0; i < lr.TrainingPoints; i++ {
-		for j := 0; j < len(lr.Xn[i]); j++ {
+		for j := 1; j < len(lr.Xn[i]); j++ {
 			if lr.Xn[i][j] != -1 {
 				t.Errorf("got %v wants -1", lr.Xn[i][j])
 			}
+		}
+		if lr.Yn[i] != 1 {
+			t.Errorf("got Yn[%v] = %v wants %v", i, lr.Yn[i], 1)
 		}
 	}
 
