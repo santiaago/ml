@@ -1,6 +1,9 @@
 package linreg
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestNewLinearRegression(t *testing.T) {
 	if lr := NewLinearRegression(); lr == nil {
@@ -335,6 +338,51 @@ func TestEValIn(t *testing.T) {
 		if got != want {
 			t.Errorf("Ein is not correct, got %v, want %v", got, want)
 		}
+	}
+}
+
+func TestEoutManual(t *testing.T) {
+	lr := NewLinearRegression()
+
+	lr.TargetFunction = func(a []float64) float64 {
+		return 1
+	}
+
+	tests := []struct {
+		Wn           []float64
+		expectedEout float64
+	}{
+		{
+			[]float64{-1, 0, 0},
+			0,
+		},
+		{
+			[]float64{1, 0, 0},
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		lr.Wn = tt.Wn
+		got := lr.Eout()
+		want := tt.expectedEout
+		if got != want {
+			t.Errorf("Eout is not correct, got %v, want %v", got, want)
+		}
+	}
+}
+
+func TestEoutAndEinAreCloseWithEnoughTraining(t *testing.T) {
+	lr := NewLinearRegression()
+	lr.TrainingPoints = 10000
+	lr.Initialize()
+	lr.Learn()
+
+	ein := lr.Ein()
+	eout := lr.Eout()
+
+	if math.Abs(eout-ein) < epsilon*0.1 {
+		t.Errorf("got %v < %v want %v > %v ", eout, ein, eout, ein)
 	}
 }
 
