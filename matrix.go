@@ -79,11 +79,11 @@ func (pm *Matrix) Add(b Matrix) (Matrix, error) {
 func (pm *Matrix) Product(b Matrix) (Matrix, error) {
 	a := *pm
 
-	if len(a) != len(b[0]) {
+	if len(a[0]) != len(b) {
 		return nil, fmt.Errorf("Product: number of cols in 'a' must be equal to the number of rows in 'b'")
 	}
-	p := make([][]float64, len(b[0]))
-	for i := 0; i < len(b[0]); i++ {
+	p := make([][]float64, len(a))
+	for i := 0; i < len(a); i++ {
 		p[i] = make([]float64, len(b[0]))
 	}
 
