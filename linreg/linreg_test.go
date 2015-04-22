@@ -142,3 +142,36 @@ func TestApplyTransformation(t *testing.T) {
 func TestApplyTransformationOnValidation(t *testing.T) {
 	// todo(santiaago): test this
 }
+
+func TestLearn(t *testing.T) {
+	lr := NewLinearRegression()
+	data := [][]float64{
+		{0.1, 1, 1},
+		{0.2, 1, 1},
+		{0.3, 1, 1},
+		{1, 0.5, -1},
+		{1, 0.6, -1},
+		{1, 0.7, -1},
+	}
+
+	lr.InitializeFromData(data)
+	lr.Learn()
+	expectedWn := []float64{0.393, -1.967, 0.983}
+	if !equal(expectedWn, lr.Wn) {
+		t.Errorf("Weight vector is not correct: got %v, want %v", lr.Wn, expectedWn)
+	}
+}
+
+const epsilon float64 = 0.001
+
+func equal(a, b []float64) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if (a[i] - b[i]) > epsilon {
+			return false
+		}
+	}
+	return true
+}
