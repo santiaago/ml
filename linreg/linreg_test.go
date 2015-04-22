@@ -386,6 +386,36 @@ func TestEoutAndEinAreCloseWithEnoughTraining(t *testing.T) {
 	}
 }
 
+func TestEoutFromFile(t *testing.T) {
+	// todo(santiaago)
+}
+
+func TestEAugOutFromFile(t *testing.T) {
+	// todo(santiaago)
+}
+
+func TestLearnWeightDecay(t *testing.T) {
+	lr := NewLinearRegression()
+	lr.K = 1
+	lr.Xn = [][]float64{
+		{1, 1, 1},
+		{1, 2, 1},
+		{1, 3, 1},
+		{1, 4, 1},
+		{1, 5, 1},
+		{1, 6, 1},
+	}
+
+	lr.Yn = []float64{1, 1, 1, 1, 1, 1}
+
+	lr.LearnWeightDecay()
+	expectedWn := []float64{0.123, 0.156, 0.123}
+	if !equal(expectedWn, lr.WReg) {
+		t.Errorf("Weight vector is not correct: got %v, want %v", lr.WReg, expectedWn)
+	}
+
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
