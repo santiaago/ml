@@ -3,6 +3,8 @@ package linreg
 import (
 	"math"
 	"testing"
+
+	"github.com/santiaago/ml/linear"
 )
 
 func TestNewLinearRegression(t *testing.T) {
@@ -413,7 +415,74 @@ func TestLearnWeightDecay(t *testing.T) {
 	if !equal(expectedWn, lr.WReg) {
 		t.Errorf("Weight vector is not correct: got %v, want %v", lr.WReg, expectedWn)
 	}
+}
 
+func TestCompareInSample(t *testing.T) {
+
+	tests := []struct {
+		data          [][]float64
+		Y             []float64
+		W             []float64
+		f             linear.Function
+		expectedDelta float64
+	}{
+		{
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 2, 1},
+				{1, 3, 1},
+				{1, 4, 1},
+				{1, 5, 1},
+				{1, 6, 1},
+			},
+			W: []float64{1, 0, 0},
+			f: func(x []float64) float64 {
+				return -1
+			},
+			expectedDelta: 1.0,
+		},
+		{
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 2, 1},
+				{1, 3, 1},
+				{1, 4, 1},
+				{1, 5, 1},
+				{1, 6, 1},
+			},
+			W: []float64{1, 0, 0},
+			f: func(x []float64) float64 {
+				return 1
+			},
+			expectedDelta: 0,
+		},
+		{
+			data: [][]float64{
+				{-1, 1, 1},
+				{-1, 2, 1},
+				{-1, 3, 1},
+				{1, 4, 1},
+				{1, 5, 1},
+				{1, 6, 1},
+			},
+			W: []float64{1, 0, 0},
+			f: func(x []float64) float64 {
+				return -1
+			},
+			expectedDelta: 0.5,
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Xn = tt.data
+		lr.Wn = tt.W
+
+		got := lr.CompareInSample(tt.f, 1)
+		if got != tt.expectedDelta {
+			t.Errorf("test %v: wrong delta btwn functions, got %v, want %v", i, got, tt.expectedDelta)
+		}
+	}
 }
 
 const epsilon float64 = 0.001
