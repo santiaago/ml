@@ -421,7 +421,6 @@ func TestCompareInSample(t *testing.T) {
 
 	tests := []struct {
 		data          [][]float64
-		Y             []float64
 		W             []float64
 		f             linear.Function
 		expectedDelta float64
@@ -479,6 +478,40 @@ func TestCompareInSample(t *testing.T) {
 		lr.Wn = tt.W
 
 		got := lr.CompareInSample(tt.f, 1)
+		if got != tt.expectedDelta {
+			t.Errorf("test %v: wrong delta btwn functions, got %v, want %v", i, got, tt.expectedDelta)
+		}
+	}
+}
+
+func TestCompareOutOfSample(t *testing.T) {
+
+	tests := []struct {
+		W             []float64
+		f             linear.Function
+		expectedDelta float64
+	}{
+		{
+			W: []float64{1, 0, 0},
+			f: func(x []float64) float64 {
+				return 0
+			},
+			expectedDelta: 1.0,
+		},
+		{
+			W: []float64{0, 0, 0},
+			f: func(x []float64) float64 {
+				return -1
+			},
+			expectedDelta: 0,
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Wn = tt.W
+
+		got := lr.CompareOutOfSample(tt.f, 1)
 		if got != tt.expectedDelta {
 			t.Errorf("test %v: wrong delta btwn functions, got %v, want %v", i, got, tt.expectedDelta)
 		}
