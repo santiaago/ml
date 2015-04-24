@@ -180,7 +180,38 @@ func TestApplyTransformation(t *testing.T) {
 }
 
 func TestApplyTransformationOnValidation(t *testing.T) {
-	// todo(santiaago): test this
+	tf := func(a []float64) []float64 {
+		for i := 1; i < len(a); i++ {
+			a[i] = -a[i]
+		}
+		return a
+	}
+
+	data := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+
+	lr := NewLinearRegression()
+	lr.InitializeValidationFromData(data)
+	lr.TransformFunction = tf
+	lr.ApplyTransformationOnValidation()
+
+	for i := 0; i < lr.ValidationPoints; i++ {
+		for j := 1; j < len(lr.XVal[i]); j++ {
+			if lr.XVal[i][j] != -1 {
+				t.Errorf("got %v wants -1", lr.XVal[i][j])
+			}
+		}
+		if lr.YVal[i] != 1 {
+			t.Errorf("got YVal[%v] = %v wants %v", i, lr.YVal[i], 1)
+		}
+	}
+
 }
 
 func TestLearn(t *testing.T) {
