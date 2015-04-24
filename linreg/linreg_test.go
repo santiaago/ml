@@ -490,7 +490,38 @@ func TestEoutFromFile(t *testing.T) {
 }
 
 func TestEAugOutFromFile(t *testing.T) {
-	// todo(santiaago)
+	lr := NewLinearRegression()
+	lr.TransformFunction = func(x []float64) []float64 {
+		return x
+	}
+	tests := []struct {
+		f            TransformFunc
+		WReg         []float64
+		expectedEout float64
+	}{
+		{
+			func(x []float64) []float64 { return x },
+			[]float64{-1, 0, 0},
+			1,
+		},
+		{
+			func(x []float64) []float64 { return x },
+			[]float64{1, 0, 0},
+			0,
+		},
+	}
+
+	for _, tt := range tests {
+		lr.WReg = tt.WReg
+		got, err := lr.EAugOutFromFile("out.data")
+		if err != nil {
+			t.Errorf("error calling EoutFromFile, %v", err)
+		}
+		want := tt.expectedEout
+		if got != want {
+			t.Errorf("Eout is not correct, got %v, want %v", got, want)
+		}
+	}
 }
 
 func TestLearnWeightDecay(t *testing.T) {
