@@ -22,7 +22,6 @@ type LinearRegression struct {
 	TrainingPoints       int             // number of training points.
 	ValidationPoints     int             // number of validation point.
 	RandomTargetFunction bool            // flag to know if target function is generated at random or defined by user.
-	TwoParams            bool            // flag to know if target function takes two parameters.
 	Noise                float64         // Noise should be btwn 0(no noise) and 1(all noise). Will simulate noise by flipping the sign of the output based on the Noise.
 	Interval             linear.Interval // Interval in which the points, outputs and function are defined.
 	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
@@ -591,9 +590,8 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 }
 
 // CompareInSample returns the number of points that are different between
-// the current hypothesis function learned by the linear regression with respect to
-// 'f', the linear function passed as param.
-func (lr *LinearRegression) CompareInSample(f linear.Function, nParams int) float64 {
+// the current hypothesis function learned by the linear regression with respect to 'f'
+func (lr *LinearRegression) CompareInSample(f linear.Function) float64 {
 
 	gInSample := make([]float64, len(lr.Xn))
 	fInSample := make([]float64, len(lr.Xn))
@@ -604,11 +602,7 @@ func (lr *LinearRegression) CompareInSample(f linear.Function, nParams int) floa
 			gi += lr.Xn[i][j] * lr.Wn[j]
 		}
 		gInSample[i] = ml.Sign(gi)
-		if nParams == 1 || nParams == 2 {
-			fInSample[i] = f(lr.Xn[i][1:])
-		} else {
-			log.Println("case not supported")
-		}
+		fInSample[i] = f(lr.Xn[i][1:])
 	}
 
 	// measure difference:
@@ -626,7 +620,7 @@ func (lr *LinearRegression) CompareInSample(f linear.Function, nParams int) floa
 // current hypothesis function learned by the linear regression with respect to
 // 'f', the linear function passed as paral. The comparison is made on out of sample points
 // generated randomly in the defined interval.
-func (lr *LinearRegression) CompareOutOfSample(f linear.Function, nParams int) float64 {
+func (lr *LinearRegression) CompareOutOfSample(f linear.Function) float64 {
 
 	outOfSample := 1000
 	diff := 0
@@ -643,12 +637,8 @@ func (lr *LinearRegression) CompareOutOfSample(f linear.Function, nParams int) f
 		for j := 0; j < len(oX); j++ {
 			gi += oX[j] * lr.Wn[j]
 		}
-		if nParams == 2 || nParams == 1 {
-			if ml.Sign(gi) != f(oX[1:]) {
-				diff++
-			}
-		} else {
-			log.Println("case not supported")
+		if ml.Sign(gi) != f(oX[1:]) {
+			diff++
 		}
 	}
 
@@ -680,18 +670,6 @@ func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
 func evaluate(f linear.Function, x []float64) float64 {
 	last := len(x) - 1
 	if x[last] < f(x[1:last]) {
-		return -1
-	}
-	return 1
-}
-
-// evaluate will map function f in point p with respect to the current y point.
-// this evaluate version takes 2 parameters instead of a single one.
-// if it stands on one side it is +1 else -1
-// todo: might change name to mapPointTwoParams
-// todo(santiaago): remove
-func evaluateTwoParams(f linear.Function, p []float64) float64 {
-	if p[3] < f(p[1:3]) {
 		return -1
 	}
 	return 1

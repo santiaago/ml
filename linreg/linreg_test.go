@@ -477,7 +477,7 @@ func TestCompareInSample(t *testing.T) {
 		lr.Xn = tt.data
 		lr.Wn = tt.W
 
-		got := lr.CompareInSample(tt.f, 1)
+		got := lr.CompareInSample(tt.f)
 		if got != tt.expectedDelta {
 			t.Errorf("test %v: wrong delta btwn functions, got %v, want %v", i, got, tt.expectedDelta)
 		}
@@ -511,7 +511,7 @@ func TestCompareOutOfSample(t *testing.T) {
 		lr := NewLinearRegression()
 		lr.Wn = tt.W
 
-		got := lr.CompareOutOfSample(tt.f, 1)
+		got := lr.CompareOutOfSample(tt.f)
 		if got != tt.expectedDelta {
 			t.Errorf("test %v: wrong delta btwn functions, got %v, want %v", i, got, tt.expectedDelta)
 		}
