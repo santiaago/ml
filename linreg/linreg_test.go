@@ -575,7 +575,36 @@ func TestTransformDataSet(t *testing.T) {
 			t.Errorf("test %v: got %v want %v", i, lr.Xn, tt.expected)
 		}
 	}
+}
 
+func TestEvaluate(t *testing.T) {
+	tests := []struct {
+		point    []float64
+		f        linear.Function
+		expected float64
+	}{
+		{
+			point: []float64{1, 1},
+			f: func(x []float64) float64 {
+				return 1
+			},
+			expected: 1,
+		},
+		{
+			point: []float64{1, -1},
+			f: func(x []float64) float64 {
+				return 1
+			},
+			expected: -1,
+		},
+	}
+
+	for i, tt := range tests {
+		got := evaluate(tt.f, tt.point)
+		if got != tt.expected {
+			t.Errorf("test %v: got %v want %v", i, got, tt.expected)
+		}
+	}
 }
 
 const epsilon float64 = 0.001

@@ -612,6 +612,7 @@ func (lr *LinearRegression) CompareInSample(f linear.Function, nParams int) floa
 	}
 
 	// measure difference:
+
 	diff := 0
 	for i := 0; i < len(lr.Xn); i++ {
 		if gInSample[i] != fInSample[i] {
