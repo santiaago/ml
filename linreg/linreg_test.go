@@ -518,6 +518,66 @@ func TestCompareOutOfSample(t *testing.T) {
 	}
 }
 
+func TestTransformDataSet(t *testing.T) {
+	tests := []struct {
+		data              [][]float64
+		transformFunction TransformFunc
+		newSize           int
+		expected          [][]float64
+	}{
+		{
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			transformFunction: func(x []float64) []float64 {
+				var xt []float64
+				xt = append(xt, x...)
+				xt = append(xt, 1)
+				return xt
+			},
+			newSize: 4,
+			expected: [][]float64{
+				{1, 1, 1, 1},
+				{1, 1, 1, 1},
+				{1, 1, 1, 1},
+			},
+		},
+		{
+			data: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			transformFunction: func(x []float64) []float64 {
+				var xt []float64
+				xt = append(xt, 1)
+				for i := range x {
+					xt = append(xt, x[i]*x[i])
+				}
+				return xt
+			},
+			newSize: 4,
+			expected: [][]float64{
+				{1, 1, 4, 9},
+				{1, 16, 25, 36},
+				{1, 49, 64, 81},
+			},
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Xn = tt.data
+		lr.TransformDataSet(tt.transformFunction, tt.newSize)
+		if !equal2D(lr.Xn, tt.expected) {
+			t.Errorf("test %v: got %v want %v", i, lr.Xn, tt.expected)
+		}
+	}
+
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
@@ -527,6 +587,24 @@ func equal(a, b []float64) bool {
 	for i := range a {
 		if (a[i] - b[i]) > epsilon {
 			return false
+		}
+	}
+	return true
+}
+
+func equal2D(a, b [][]float64) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if len(a[i]) != len(b[i]) {
+			return false
+		}
+		for j := range a[i] {
+
+			if (a[i][j] - b[i][j]) > epsilon {
+				return false
+			}
 		}
 	}
 	return true
