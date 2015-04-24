@@ -71,7 +71,22 @@ func TestFlip(t *testing.T) {
 }
 
 func TestInitializeFromFile(t *testing.T) {
-	// todo(santiaago): make this test.
+	lr := NewLinearRegression()
+	if err := lr.InitializeFromFile("TestInitializeFromFile.data"); err != nil {
+		t.Errorf("%v", err)
+	}
+	if len(lr.Xn) != 6 || len(lr.Yn) != 6 {
+		t.Errorf("got difference in size of Xn or Yn and data")
+	}
+	if len(lr.Xn) != lr.TrainingPoints {
+		t.Errorf("got difference in size of Xn or TrainingPoints and data")
+	}
+	if len(lr.Xn[0]) != len(lr.Wn) {
+		t.Errorf("got different size of vectors Xn Wn, wants same size")
+	}
+	if len(lr.Xn[0]) != lr.VectorSize || 3 != lr.VectorSize {
+		t.Errorf("got difference in size of Xn[0] or data[0] with VectorSize")
+	}
 }
 
 func TestInitializeFromData(t *testing.T) {
