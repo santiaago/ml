@@ -72,7 +72,7 @@ func TestFlip(t *testing.T) {
 
 func TestInitializeFromFile(t *testing.T) {
 	lr := NewLinearRegression()
-	if err := lr.InitializeFromFile("TestInitializeFromFile.data"); err != nil {
+	if err := lr.InitializeFromFile("init.data"); err != nil {
 		t.Errorf("%v", err)
 	}
 	if len(lr.Xn) != 6 || len(lr.Yn) != 6 {
@@ -120,7 +120,7 @@ func TestInitializeFromData(t *testing.T) {
 }
 
 func TestInitializeValidationFromData(t *testing.T) {
-	//todo(santiaago): test this
+
 }
 
 func TestApplyTransformation(t *testing.T) {
