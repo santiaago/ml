@@ -607,6 +607,25 @@ func TestEvaluate(t *testing.T) {
 	}
 }
 
+func TestString(t *testing.T) {
+	lr := NewLinearRegression()
+	lr.TrainingPoints = 1
+	lr.Xn = [][]float64{
+		{1, 1, 1},
+	}
+	lr.Yn = []float64{1}
+	lr.Wn = []float64{1, 1, 1}
+	expected := `f(X) = 0.00X + 0.00
+X: [1 1 1]	 Y: 1
+
+W: [1 1 1]
+`
+	got := lr.String()
+	if got != expected {
+		t.Errorf("test string: got \n'%v', want \n'%v'", got, expected)
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
