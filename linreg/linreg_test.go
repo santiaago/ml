@@ -622,7 +622,15 @@ W: [1 1 1]
 `
 	got := lr.String()
 	if got != expected {
-		t.Errorf("test string: got \n'%v', want \n'%v'", got, expected)
+		t.Errorf("got \n'%v', want \n'%v'", got, expected)
+	}
+}
+
+func TestLinearRegressionError(t *testing.T) {
+	got := LinearRegressionError(1, 2, 3)
+	want := -12.0
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
 	}
 }
 
