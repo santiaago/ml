@@ -120,7 +120,27 @@ func TestInitializeFromData(t *testing.T) {
 }
 
 func TestInitializeValidationFromData(t *testing.T) {
-
+	data := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+	lr := NewLinearRegression()
+	if err := lr.InitializeValidationFromData(data); err != nil {
+		t.Errorf("%v", err)
+	}
+	if len(lr.XVal) != len(data) || len(lr.YVal) != len(data) {
+		t.Errorf("got difference in size of XVal or YVal and data")
+	}
+	if len(lr.XVal) != lr.ValidationPoints {
+		t.Errorf("got difference in size of XVal or TrainingPoints and data")
+	}
+	if len(lr.XVal[0]) != lr.VectorSize || len(data[0]) != lr.VectorSize {
+		t.Errorf("got difference in size of XVal[0] or data[0] with VectorSize")
+	}
 }
 
 func TestApplyTransformation(t *testing.T) {
