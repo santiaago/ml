@@ -2,6 +2,7 @@ package linreg
 
 import (
 	"math"
+	"sort"
 	"strings"
 	"testing"
 
@@ -808,6 +809,47 @@ func TestLinearRegressionError(t *testing.T) {
 	want := -12.0
 	if got != want {
 		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestSortRegressions(t *testing.T) {
+
+	data := [][]float64{
+		{1, 0.1, 0.1},
+		{1, 0.2, 0.2},
+		{1, 0.3, 0.3},
+		{1, 0.4, 0.4},
+		{1, 0.5, 0.5},
+		{1, 0.6, 0.6},
+	}
+
+	tests := []struct {
+		Y  []float64
+		Wn []float64
+	}{
+		{[]float64{1, 1, 1, -1, -1, -1}, []float64{-1, 0, 0}},
+		{[]float64{-1, -1, -1, -1, -1, -1}, []float64{-1, 0, 0}},
+		{[]float64{-1, -1, -1, -1, -1, -1}, []float64{1, 0, 0}},
+	}
+
+	var lrs Regressions
+	var eins sort.Float64Slice
+	for _, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Xn = data
+		lr.Yn = tt.Y
+		lr.Wn = tt.Wn
+		eins = append(eins, lr.Ein())
+		lrs = append(lrs, lr)
+	}
+
+	eins.Sort()
+	sort.Sort(lrs)
+	for i, lr := range lrs {
+		got := lr.Ein()
+		if got != eins[i] {
+			t.Errorf("got Ein = %v, want %v", got, eins[i])
+		}
 	}
 }
 

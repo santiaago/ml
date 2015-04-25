@@ -663,6 +663,28 @@ func (lr *LinearRegression) Predict(x []float64) (float64, error) {
 	return p, nil
 }
 
+// regressions implement sort interface.
+type Regressions []*LinearRegression
+
+func (slice Regressions) Len() int {
+	return len(slice)
+}
+
+func (slice Regressions) Less(i, j int) bool {
+	return (*slice[i]).Ein() < (*slice[j]).Ein()
+}
+
+func (slice Regressions) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func (slice Regressions) Print(top int) {
+	for i := 0; i < top; i++ {
+		lr := slice[i]
+		fmt.Printf("EIn = %f \t%s\n", lr.Ein(), lr.Name)
+	}
+}
+
 // evaluate will map function f in point p with respect to the current y point.
 // if it stands on one side it is +1 else -1
 // vector x is defined as x0, x1 .. , xn, y
