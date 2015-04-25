@@ -312,9 +312,9 @@ func (lr *LinearRegression) Ein() float64 {
 	// XnWn
 	gInSample := make([]float64, len(lr.Xn))
 	for i := 0; i < len(lr.Xn); i++ {
-		gi := float64(0)
-		for j := 0; j < len(lr.Xn[0]); j++ {
-			gi += lr.Xn[i][j] * lr.Wn[j]
+		gi, err := lr.Predict(lr.Xn[i])
+		if err != nil {
+			continue
 		}
 		gInSample[i] = ml.Sign(gi)
 	}
@@ -357,9 +357,9 @@ func (lr *LinearRegression) EValIn() float64 {
 
 	gInSample := make([]float64, len(lr.XVal))
 	for i := 0; i < len(lr.XVal); i++ {
-		gi := float64(0)
-		for j := 0; j < len(lr.XVal[0]); j++ {
-			gi += lr.XVal[i][j] * lr.Wn[j]
+		gi, err := lr.Predict(lr.XVal[i])
+		if err != nil {
+			continue
 		}
 		gInSample[i] = ml.Sign(gi)
 	}
@@ -392,9 +392,10 @@ func (lr *LinearRegression) Eout() float64 {
 		oY = evaluate(lr.TargetFunction, oX) * lr.flip()
 
 		var gi float64
-
-		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * lr.Wn[j]
+		gi, err := lr.Predict(oX)
+		if err != nil {
+			numError++
+			continue
 		}
 
 		if ml.Sign(gi) != oY {
@@ -444,9 +445,11 @@ func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 
 		oX := lr.TransformFunction([]float64{1, oX1, oX2})
 
-		var gi float64
-		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * lr.Wn[j]
+		gi, err := lr.Predict(oX)
+		if err != nil {
+			numError++
+			n++
+			continue
 		}
 		if ml.Sign(gi) != oY {
 			numError++
@@ -577,10 +580,14 @@ func (lr *LinearRegression) CompareInSample(f linear.Function) float64 {
 	fInSample := make([]float64, len(lr.Xn))
 
 	for i := 0; i < len(lr.Xn); i++ {
-		gi := float64(0)
-		for j := 0; j < len(lr.Xn[0]); j++ {
-			gi += lr.Xn[i][j] * lr.Wn[j]
+		gi, err := lr.Predict(lr.Xn[i])
+		if err != nil {
+			// force difference because of error
+			gInSample[i] = 0
+			fInSample[i] = f(lr.Xn[i][1:])
+			continue
 		}
+
 		gInSample[i] = ml.Sign(gi)
 		fInSample[i] = f(lr.Xn[i][1:])
 	}
@@ -613,9 +620,10 @@ func (lr *LinearRegression) CompareOutOfSample(f linear.Function) float64 {
 			oX[j] = lr.Interval.RandFloat()
 		}
 
-		gi := float64(0)
-		for j := 0; j < len(oX); j++ {
-			gi += oX[j] * lr.Wn[j]
+		gi, err := lr.Predict(oX)
+		if err != nil {
+			diff++
+			continue
 		}
 		if ml.Sign(gi) != f(oX[1:]) {
 			diff++
@@ -640,6 +648,19 @@ func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
 		}
 	}
 	lr.Wn = make([]float64, newSize)
+}
+
+// Predict returns the result of the dot product between the x vector passed as param
+// and the linear regression vector of weights.
+func (lr *LinearRegression) Predict(x []float64) (float64, error) {
+	if len(x) != len(lr.Wn) {
+		return 0, fmt.Errorf("Linreg.Predict, size of x and Wn vector are different")
+	}
+	var p float64
+	for j := 0; j < len(x); j++ {
+		p += x[j] * lr.Wn[j]
+	}
+	return p, nil
 }
 
 // evaluate will map function f in point p with respect to the current y point.

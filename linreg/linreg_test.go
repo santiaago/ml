@@ -2,6 +2,7 @@ package linreg
 
 import (
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/santiaago/ml/linear"
@@ -705,6 +706,54 @@ func TestTransformDataSet(t *testing.T) {
 	}
 }
 
+func TestPredict(t *testing.T) {
+	tests := []struct {
+		w        []float64
+		x        []float64
+		expected float64
+		err      string
+	}{
+		{
+			w:        []float64{1, 0, 0},
+			x:        []float64{1, 1, 1},
+			expected: 1,
+		},
+		{
+			w:        []float64{1, 1, 1},
+			x:        []float64{1, 1, 1},
+			expected: 3,
+		},
+		{
+			w:        []float64{0, 0, 0},
+			x:        []float64{1, 1, 1},
+			expected: 0,
+		},
+		{
+			w:        []float64{1, 2, 3},
+			x:        []float64{4, 5, 6},
+			expected: 32,
+		},
+		{
+			w:        []float64{1, 2, 3},
+			x:        []float64{4, 5},
+			expected: 32,
+			err:      "size",
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Wn = tt.w
+		if got, err := lr.Predict(tt.x); err != nil {
+			if !strings.Contains(errstring(err), tt.err) {
+				t.Errorf("test %v: got error %v, want %v", i, err, tt.err)
+			}
+		} else if got != tt.expected {
+			t.Errorf("test %v: got %v ,want %v", i, got, tt.expected)
+		}
+	}
+}
+
 func TestEvaluate(t *testing.T) {
 	tests := []struct {
 		point    []float64
@@ -792,4 +841,12 @@ func equal2D(a, b [][]float64) bool {
 		}
 	}
 	return true
+}
+
+// errstring returns the string representation of an error.
+func errstring(err error) string {
+	if err != nil {
+		return err.Error()
+	}
+	return ""
 }
