@@ -136,17 +136,14 @@ func (lr *LinearRegression) InitializeFromFile(filename string) error {
 		var x1, x2, y float64
 
 		if x1, err = strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return err
 		}
 
 		if x2, err = strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
 			return err
 		}
 
 		if y, err = strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
 			return err
 		}
 
@@ -254,28 +251,24 @@ func (lr *LinearRegression) Learn() error {
 	var mXT ml.Matrix
 
 	if mXT, err = mXn.Transpose(); err != nil {
-		log.Printf("unable to make transpose, %v\n", err)
 		return err
 	}
 
 	// compute the product of X' and X
 	var mXP ml.Matrix
 	if mXP, err = mXT.Product(mXn); err != nil {
-		log.Printf("unable to make matrix product, %v\n", err)
 		return err
 	}
 
 	// inverse XProduct
 	var mXInv ml.Matrix
 	if mXInv, err = mXP.Inverse(); err != nil {
-		log.Printf("unable to compute matrix inverse, %v\n", err)
 		return err
 	}
 
 	// compute product: (X'X)^-1 X'
 	var XDagger ml.Matrix
 	if XDagger, err = mXInv.Product(mXT); err != nil {
-		log.Printf("unable to compute XDagger, %v\n", err)
 		return err
 	}
 
@@ -438,17 +431,14 @@ func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 		var oX1, oX2, oY float64
 
 		if oX1, err = strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
 		if oX2, err = strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
 		if oY, err = strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
@@ -495,19 +485,16 @@ func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 		var oX1, oX2 float64
 
 		if oX1, err = strconv.ParseFloat(line[0], 64); err != nil {
-			fmt.Printf("x1 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
 		if oX2, err = strconv.ParseFloat(line[1], 64); err != nil {
-			fmt.Printf("x2 unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
 		oX := lr.TransformFunction([]float64{1, oX1, oX2})
 
 		if oY, err = strconv.ParseFloat(line[2], 64); err != nil {
-			fmt.Printf("y unable to parse line %d in file %s\n", n, filename)
 			return 0, err
 		}
 
@@ -537,35 +524,30 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 	var mXT ml.Matrix
 
 	if mXT, err = mX.Transpose(); err != nil {
-		log.Printf("unable to make transpose, %v\n", err)
 		return err
 	}
 
 	// compute lambda*Identity
 	var ID ml.Matrix
 	if ID, err = ml.Identity(len(lr.Xn[0])); err != nil {
-		log.Printf("unable to make identity matrix, %v\n", err)
 		return err
 	}
 
 	var mLID ml.Matrix
 
 	if mLID, err = ID.Scalar(lr.Lambda); err != nil {
-		log.Printf("unable to make identity matrix, %v\n", err)
 		return err
 	}
 
 	// compute Z'Z
 	var mXP ml.Matrix
 	if mXP, err = mXT.Product(mX); err != nil {
-		log.Printf("unable to make matrix product, %v\n", err)
 		return err
 	}
 
 	// compute Z'Z + lambda*I
 	var mS ml.Matrix
 	if mS, err = mLID.Add(mXP); err != nil {
-		log.Printf("unable to add matrices, %v\n", err)
 		return err
 	}
 
@@ -573,14 +555,12 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 	var mInv ml.Matrix
 
 	if mInv, err = mS.Inverse(); err != nil {
-		log.Printf("unable to compute matrix inverse, %v\n", err)
 		return err
 	}
 
 	// compute product: inverseMatrix Z'
 	var XDagger ml.Matrix
 	if XDagger, err = mInv.Product(mXT); err != nil {
-		log.Printf("unable to compute the matrix product, %v\n", err)
 		return err
 	}
 
