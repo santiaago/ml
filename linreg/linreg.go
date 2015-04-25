@@ -27,7 +27,7 @@ type LinearRegression struct {
 	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
 	TargetFunction       linear.Function // linear target function to predict.
 	TransformFunction    TransformFunc   // transformation function.
-	Transform            bool            // determines if linear regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
+	HasTransform         bool            // determines if linear regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly present in Interval).
 	XVal                 [][]float64     // data set of point  for validation.
 	VectorSize           int             // size of vectors Xi and Wi.
@@ -224,7 +224,7 @@ func (lr *LinearRegression) InitializeValidationFromData(data [][]float64) error
 // and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
 // It Sets Wn size to the size of Xtrans.
 func (lr *LinearRegression) ApplyTransformation() {
-	lr.Transform = true
+	lr.HasTransform = true
 
 	for i := 0; i < lr.TrainingPoints; i++ {
 		Xtrans := lr.TransformFunction(lr.Xn[i])
