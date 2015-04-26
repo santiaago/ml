@@ -663,6 +663,39 @@ func (lr *LinearRegression) Predict(x []float64) (float64, error) {
 	return p, nil
 }
 
+// Predictions returns the prediction of each row of the 'data' passed in.
+// It make a prediction by calling lr.Predict on each row of the data.
+// If it fails to make a prediction it arbitrarly sets the result to 0
+func (lr *LinearRegression) Predictions(data [][]float64) ([]float64, error) {
+
+	var predictions []float64
+	for i := 0; i < len(data); i++ {
+
+		x := []float64{}
+		// append x0
+		x = append(x, 1)
+
+		x = append(x, data[i]...)
+
+		if lr.HasTransform {
+			x = lr.TransformFunction(x)
+		}
+
+		gi, err := lr.Predict(x)
+		if err != nil {
+			predictions = append(predictions, 0)
+			continue
+		}
+
+		if ml.Sign(gi) == float64(1) {
+			predictions = append(predictions, 1)
+		} else {
+			predictions = append(predictions, 0)
+		}
+	}
+	return predictions, nil
+}
+
 // regressions implement sort interface.
 type Regressions []*LinearRegression
 

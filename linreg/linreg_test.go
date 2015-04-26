@@ -755,6 +755,82 @@ func TestPredict(t *testing.T) {
 	}
 }
 
+func TestPredictions(t *testing.T) {
+
+	tests := []struct {
+		w        []float64
+		data     [][]float64
+		expected []float64
+		err      string
+	}{
+		{
+			w: []float64{1, 0, 0, 0},
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			expected: []float64{1, 1, 1, 1, 1},
+		},
+		{
+			w: []float64{1, 1, 1, 1},
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			expected: []float64{4, 4, 4, 4, 4},
+		},
+		{
+			w: []float64{0, 0, 0, 0},
+			data: [][]float64{
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			expected: []float64{0, 0, 0, 0, 0},
+		},
+		{
+			w: []float64{1, 2, 3, 4},
+			data: [][]float64{
+				{4, 5, 6},
+				{4, 5, 6},
+				{4, 5, 6},
+				{4, 5, 6},
+				{4, 5, 6},
+			},
+			expected: []float64{32, 32, 32, 32, 32},
+		},
+		{
+			w: []float64{1, 2, 3, 4},
+			data: [][]float64{
+				{4, 5, 6},
+				{4, 5},
+				{4, 5},
+				{4, 5},
+				{4, 5, 6},
+			},
+			expected: []float64{32, 0, 0, 0, 32},
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLinearRegression()
+		lr.Wn = tt.w
+		if got, err := lr.Predictions(tt.data); err != nil {
+			t.Errorf("test %v: got error %v, want %v", i, err, tt.err)
+		} else if !equal(got, tt.expected) {
+			t.Errorf("test %v: got %v ,want %v", i, got, tt.expected)
+		}
+	}
+}
+
 func TestEvaluate(t *testing.T) {
 	tests := []struct {
 		point    []float64
