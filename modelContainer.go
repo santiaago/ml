@@ -39,6 +39,9 @@ func (slice ModelContainers) Swap(i, j int) {
 func (models ModelContainers) PrintTop(n int) {
 	sort.Sort(models)
 	for i := 0; i < n && i < len(models); i++ {
+		if models[i] == nil {
+			continue
+		}
 		m := models[i].Model
 		fmt.Printf("EIn = %f \t%s\n", m.Ein(), models[i].Name)
 	}
