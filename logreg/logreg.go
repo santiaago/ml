@@ -1,9 +1,14 @@
 package logreg
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/santiaago/ml/linear"
 )
@@ -99,6 +104,65 @@ func (lr *LogisticRegression) InitializeFromData(data [][]float64) error {
 	lr.VectorSize = len(lr.Xn[0])
 	lr.Wn = make([]float64, lr.VectorSize)
 
+	return nil
+}
+
+// InitializeFromFile reads a file with the following format:
+// x1 x2 y
+// x1 x2 y
+// x1 x2 y
+// And sets Xn and Yn accordingly
+// todo(santiaago): make function accept any number of points and 'y'.
+func (lr *LogisticRegression) InitializeFromFile(filename string) error {
+
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	n := 0
+	for scanner.Scan() {
+		split := strings.Split(scanner.Text(), " ")
+		var line []string
+		for _, s := range split {
+			cell := strings.Replace(s, " ", "", -1)
+			if len(cell) > 0 {
+				line = append(line, cell)
+			}
+		}
+
+		var x1, x2, y float64
+
+		if x1, err = strconv.ParseFloat(line[0], 64); err != nil {
+			return err
+		}
+
+		if x2, err = strconv.ParseFloat(line[1], 64); err != nil {
+			return err
+		}
+
+		if y, err = strconv.ParseFloat(line[2], 64); err != nil {
+			return err
+		}
+
+		newX := []float64{1, x1, x2}
+		lr.Xn = append(lr.Xn, newX)
+		lr.Yn = append(lr.Yn, y)
+
+		n++
+	}
+
+	lr.TrainingPoints = n
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+		return err
+	}
 	return nil
 }
 

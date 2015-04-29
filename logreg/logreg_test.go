@@ -76,6 +76,25 @@ func TestInitializeFromData(t *testing.T) {
 	}
 }
 
+func TestInitializeFromFile(t *testing.T) {
+	lr := NewLogisticRegression()
+	if err := lr.InitializeFromFile("init.data"); err != nil {
+		t.Errorf("%v", err)
+	}
+	if len(lr.Xn) != 6 || len(lr.Yn) != 6 {
+		t.Errorf("got difference in size of Xn or Yn and data")
+	}
+	if len(lr.Xn) != lr.TrainingPoints {
+		t.Errorf("got difference in size of Xn or TrainingPoints and data")
+	}
+	if len(lr.Xn[0]) != len(lr.Wn) {
+		t.Errorf("got different size of vectors Xn Wn, wants same size")
+	}
+	if len(lr.Xn[0]) != lr.VectorSize || 3 != lr.VectorSize {
+		t.Errorf("got difference in size of Xn[0] or data[0] with VectorSize")
+	}
+}
+
 func TestLearn(t *testing.T) {
 	lr := NewLogisticRegression()
 	data := [][]float64{
