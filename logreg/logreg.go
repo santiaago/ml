@@ -133,20 +133,19 @@ func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	v := make([]float64, len(wi)+1)
 	v[0] = yi
 	for i, x := range wi {
-		v[i+1] = float64(yi) * x
+		v[i+1] = yi * x
 	}
-	a := make([]float64, len(wi)+1)
-	a[0] = float64(1)
-	for i := range wi {
-		a[i+1] = wi[i]
-	}
+	var a []float64
+	a = append(a, 1)
+	a = append(a, wi...)
+
 	b := make([]float64, len(lr.Wn))
 	copy(b, lr.Wn)
 	d := float64(1) + math.Exp(float64(yi)*dot(a, b))
 
 	//vG = [-1.0 * x / d for x in vector]
 	vg := make([]float64, len(v))
-	for i, _ := range v {
+	for i := range v {
 		vg[i] = float64(-1) * v[i] / d
 	}
 	return vg
