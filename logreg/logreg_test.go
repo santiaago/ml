@@ -290,6 +290,41 @@ func TestEin(t *testing.T) {
 	}
 }
 
+func TestApplyTransformation(t *testing.T) {
+
+	tf := func(a []float64) []float64 {
+		for i := 1; i < len(a); i++ {
+			a[i] = -a[i]
+		}
+		return a
+	}
+
+	data := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+
+	lr := NewLogisticRegression()
+	lr.InitializeFromData(data)
+	lr.TransformFunction = tf
+	lr.ApplyTransformation()
+
+	for i := 0; i < lr.TrainingPoints; i++ {
+		for j := 1; j < len(lr.Xn[i]); j++ {
+			if lr.Xn[i][j] != -1 {
+				t.Errorf("got %v wants -1", lr.Xn[i][j])
+			}
+		}
+		if lr.Yn[i] != 1 {
+			t.Errorf("got Yn[%v] = %v wants %v", i, lr.Yn[i], 1)
+		}
+	}
+}
+
 func TestPredict(t *testing.T) {
 	tests := []struct {
 		w        []float64

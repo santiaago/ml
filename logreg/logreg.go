@@ -24,6 +24,8 @@ type LogisticRegression struct {
 	Epsilon              float64         // small value used to determined when is it converging.
 	Equation             linear.Equation // random equation that defines the random linear function: targetFunction.
 	TargetFunction       linear.Function // random linear function.
+	TransformFunction    TransformFunc   // transformation function.
+	HasTransform         bool            // determines if logistic regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly chosen in Interval).
 	Yn                   []float64       // output, evaluation of each Xi based on the linear function.
 	Wn                   []float64       // weight vector.
@@ -234,6 +236,23 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 	lr.Wn = newW
 }
 
+// TransformFunc type is used to define transformation functions.
+type TransformFunc func([]float64) []float64
+
+// ApplyTransformation sets Transform flag to true
+// and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
+// It Sets Wn size to the size of Xtrans.
+func (lr *LogisticRegression) ApplyTransformation() {
+	lr.HasTransform = true
+
+	for i := 0; i < lr.TrainingPoints; i++ {
+		Xtrans := lr.TransformFunction(lr.Xn[i])
+		lr.Xn[i] = Xtrans
+	}
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
+}
+
 // Predict returns the result of the dot product between the x vector passed as param
 // and the logistic regression vector of weights.
 func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
@@ -263,9 +282,9 @@ func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 
 		// todo(santiaago):
 		// logreg should support transformation funcs
-		// if lr.HasTransform {
-		// 	x = lr.TransformFunction(x)
-		// }
+		if lr.HasTransform {
+			x = lr.TransformFunction(x)
+		}
 
 		gi, err := lr.Predict(x)
 		if err != nil {
@@ -303,7 +322,6 @@ func evaluate(f linear.Function, x []float64) float64 {
 }
 
 // Ein returns the in sample error of the current model.
-// todo(santiaago): compute Ein
 func (lr *LogisticRegression) Ein() float64 {
 	// XnWn
 	gInSample := make([]float64, len(lr.Xn))
