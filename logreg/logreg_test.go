@@ -183,6 +183,17 @@ func TestUpdateWeights(t *testing.T) {
 	}
 }
 
+func TestConverged(t *testing.T) {
+	lr := NewLogisticRegression()
+	lr.Wn = []float64{0.1, 0.1, 0.1}
+	w := []float64{0.1, 0.1, 0.1}
+	got := lr.Converged(w)
+	want := true
+	if got != want {
+		t.Errorf("got converged = %v, wants %v", got, want)
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
