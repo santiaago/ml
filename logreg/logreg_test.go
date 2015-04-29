@@ -133,16 +133,29 @@ func TestGradient(t *testing.T) {
 }
 
 func TestUpdateWeights(t *testing.T) {
-	lr := NewLogisticRegression()
-	lr.Eta = 0.1
-	lr.Wn = []float64{1, 1, 1}
-	gv := []float64{1, 1, 1}
+	tests := []struct {
+		eta            float64
+		w              []float64
+		gradientVector []float64
+		want           []float64
+	}{
+		{
+			eta:            0.1,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.9, 0.9, 0.9},
+		},
+	}
 
-	lr.UpdateWeights(gv)
-	got := lr.Wn
-	want := []float64{0.9, 0.9, 0.9}
-	if !equal(got, want) {
-		t.Errorf("got Wn:%v, want %v", got, want)
+	for i, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.Eta = tt.eta
+		lr.Wn = tt.w
+		lr.UpdateWeights(tt.gradientVector)
+		got := lr.Wn
+		if !equal(got, tt.want) {
+			t.Errorf("test %v: got Wn:%v, want %v", i, got, tt.want)
+		}
 	}
 }
 
