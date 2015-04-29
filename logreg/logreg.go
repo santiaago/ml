@@ -162,20 +162,20 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 	}
 
 	newW := make([]float64, len(lr.Wn))
-	for i, _ := range lr.Wn {
+	for i := range lr.Wn {
 		newW[i] = (lr.Wn[i] - lr.Eta*gt[i])
 	}
 	lr.Wn = newW
 }
 
-// Coverged returns a boolean answer telling whether the old weight vector
+// Converged returns a boolean answer telling whether the old weight vector
 // and the new vector have converted based on the epsilon value.
-func (logreg *LogisticRegression) Converged(wOld []float64) bool {
+func (lr *LogisticRegression) Converged(wOld []float64) bool {
 	diff := make([]float64, len(wOld))
-	for i, _ := range wOld {
-		diff[i] = logreg.Wn[i] - wOld[i]
+	for i := range wOld {
+		diff[i] = lr.Wn[i] - wOld[i]
 	}
-	return norm(diff) < logreg.Epsilon
+	return norm(diff) < lr.Epsilon
 }
 
 // norm performs the norm operation of the vector 'v' passed as argument.
@@ -190,7 +190,7 @@ func dot(a, b []float64) float64 {
 		panic(a)
 	}
 	var ret float64
-	for i, _ := range a {
+	for i := range a {
 		ret += a[i] * b[i]
 	}
 	return ret
@@ -200,7 +200,7 @@ func dot(a, b []float64) float64 {
 // from 0 to n -1
 func buildIndexArray(n int) []int {
 	indexes := make([]int, n)
-	for i, _ := range indexes {
+	for i := range indexes {
 		indexes[i] = i
 	}
 	return indexes
