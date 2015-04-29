@@ -1,6 +1,10 @@
 package logreg
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/santiaago/ml/linear"
+)
 
 func TestNewLogisticRegression(t *testing.T) {
 	if lr := NewLogisticRegression(); lr == nil {
@@ -218,6 +222,48 @@ func TestConverged(t *testing.T) {
 		if got != tt.want {
 			t.Errorf("test %v: got converged = %v, wants %v", i, got, tt.want)
 		}
+	}
+}
+
+func TestEvaluate(t *testing.T) {
+	tests := []struct {
+		point    []float64
+		f        linear.Function
+		expected float64
+	}{
+		{
+			point: []float64{1, 1},
+			f: func(x []float64) float64 {
+				return 1
+			},
+			expected: 1,
+		},
+		{
+			point: []float64{1, -1},
+			f: func(x []float64) float64 {
+				return 1
+			},
+			expected: -1,
+		},
+	}
+
+	for i, tt := range tests {
+		got := evaluate(tt.f, tt.point)
+		if got != tt.expected {
+			t.Errorf("test %v: got %v want %v", i, got, tt.expected)
+		}
+	}
+}
+
+func TestCrossEntropyError(t *testing.T) {
+	sample := []float64{1, 1, 1}
+	y := float64(-1)
+	lr := NewLogisticRegression()
+	lr.Wn = []float64{1, 1, 1}
+	got := lr.CrossEntropyError(sample, y)
+	want := 3.048
+	if (got - want) > epsilon {
+		t.Errorf("test %v: got %v, want %v", 0, got, want)
 	}
 }
 

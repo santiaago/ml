@@ -228,6 +228,7 @@ func evaluate(f linear.Function, x []float64) float64 {
 }
 
 // Ein returns the in sample error of the current model.
+// todo(santiaago): compute Ein
 func (lr *LogisticRegression) Ein() float64 {
 	return 1
 }
