@@ -132,6 +132,20 @@ func TestGradient(t *testing.T) {
 	}
 }
 
+func TestUpdateWeights(t *testing.T) {
+	lr := NewLogisticRegression()
+	lr.Eta = 0.1
+	lr.Wn = []float64{1, 1, 1}
+	gv := []float64{1, 1, 1}
+
+	lr.UpdateWeights(gv)
+	got := lr.Wn
+	want := []float64{0.9, 0.9, 0.9}
+	if !equal(got, want) {
+		t.Errorf("got Wn:%v, want %v", got, want)
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
