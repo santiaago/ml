@@ -103,13 +103,31 @@ func TestGradient(t *testing.T) {
 			wn:   []float64{0, 0, 0, 0},
 			want: []float64{-0.5, 0, 0, 0},
 		},
+		{
+			w:    []float64{1, 0, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, 0, 0},
+		},
+		{
+			w:    []float64{1, 1, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, -0.5, 0},
+		},
+		{
+			w:    []float64{1, 1, 1},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, -0.5, -0.5},
+		},
 	}
-	for _, tt := range tests {
+	for i, tt := range tests {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.wn
 		got := lr.Gradient(tt.w, tt.y)
 		if !equal(got, tt.want) {
-			t.Errorf("got Gradient = %v, want %v", got, tt.want)
+			t.Errorf("test %i: got Gradient = %v, want %v", i, got, tt.want)
 		}
 	}
 }
