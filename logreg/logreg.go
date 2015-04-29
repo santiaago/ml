@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/santiaago/ml"
 	"github.com/santiaago/ml/linear"
 )
 
@@ -168,7 +169,7 @@ func (lr *LogisticRegression) InitializeFromFile(filename string) error {
 
 // Learn will use a stockastic gradient descent (SGD) algorithm
 // and update Wn vector acordingly.
-func (lr *LogisticRegression) Learn() {
+func (lr *LogisticRegression) Learn() error {
 
 	lr.Epochs = 0
 	indexes := buildIndexArray(lr.TrainingPoints)
@@ -187,6 +188,7 @@ func (lr *LogisticRegression) Learn() {
 			break
 		}
 	}
+	return nil
 }
 
 // Gradient returns the gradient vector with respect to:
@@ -232,6 +234,54 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 	lr.Wn = newW
 }
 
+// Predict returns the result of the dot product between the x vector passed as param
+// and the logistic regression vector of weights.
+func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
+	if len(x) != len(lr.Wn) {
+		return 0, fmt.Errorf("logreg.Predict, size of x and Wn vector are different")
+	}
+	var p float64
+	for j := 0; j < len(x); j++ {
+		p += x[j] * lr.Wn[j]
+	}
+	return p, nil
+}
+
+// Predictions returns the prediction of each row of the 'data' passed in.
+// It make a prediction by calling lr.Predict on each row of the data.
+// If it fails to make a prediction it arbitrarly sets the result to 0
+func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
+
+	var predictions []float64
+	for i := 0; i < len(data); i++ {
+
+		x := []float64{}
+		// append x0
+		x = append(x, 1)
+
+		x = append(x, data[i]...)
+
+		// todo(santiaago):
+		// logreg should support transformation funcs
+		// if lr.HasTransform {
+		// 	x = lr.TransformFunction(x)
+		// }
+
+		gi, err := lr.Predict(x)
+		if err != nil {
+			predictions = append(predictions, 0)
+			continue
+		}
+
+		if ml.Sign(gi) == float64(1) {
+			predictions = append(predictions, 1)
+		} else {
+			predictions = append(predictions, 0)
+		}
+	}
+	return predictions, nil
+}
+
 // Converged returns a boolean answer telling whether the old weight vector
 // and the new vector have converted based on the epsilon value.
 func (lr *LogisticRegression) Converged(wOld []float64) bool {
@@ -240,45 +290,6 @@ func (lr *LogisticRegression) Converged(wOld []float64) bool {
 		diff[i] = lr.Wn[i] - wOld[i]
 	}
 	return norm(diff) < lr.Epsilon
-}
-
-// norm performs the norm operation of the vector 'v' passed as argument.
-// todo(santiaago): move this to math.go or vector.go
-func norm(v []float64) float64 {
-	return math.Sqrt(dot(v, v))
-}
-
-// dot performs the dot product of vectors 'a' and 'b'.
-// todo(santiaago): move this to math.go or vector.go
-func dot(a, b []float64) float64 {
-	if len(a) != len(b) {
-		fmt.Println("Panic: lenght of a, and b should be equal")
-		panic(a)
-	}
-	var ret float64
-	for i := range a {
-		ret += a[i] * b[i]
-	}
-	return ret
-}
-
-// buildIndexArray builds an array of incremental integers
-// from 0 to n -1
-func buildIndexArray(n int) []int {
-	indexes := make([]int, n)
-	for i := range indexes {
-		indexes[i] = i
-	}
-	return indexes
-}
-
-// shuffleArray shuffles an array of integers.
-func shuffleArray(a *[]int) {
-	slice := *a
-	for i := range slice {
-		j := rand.Intn(i + 1)
-		slice[i], slice[j] = slice[j], slice[i]
-	}
 }
 
 // evaluate returns +1 or -1 based on the point passed as argument
@@ -322,4 +333,43 @@ func (lr *LogisticRegression) Eout() float64 {
 // log(1 + exp(-y*sample*w))
 func (lr *LogisticRegression) CrossEntropyError(sample []float64, Y float64) float64 {
 	return math.Log(float64(1) + math.Exp(-Y*dot(sample, lr.Wn)))
+}
+
+// norm performs the norm operation of the vector 'v' passed as argument.
+// todo(santiaago): move this to math.go or vector.go
+func norm(v []float64) float64 {
+	return math.Sqrt(dot(v, v))
+}
+
+// dot performs the dot product of vectors 'a' and 'b'.
+// todo(santiaago): move this to math.go or vector.go
+func dot(a, b []float64) float64 {
+	if len(a) != len(b) {
+		fmt.Println("Panic: lenght of a, and b should be equal")
+		panic(a)
+	}
+	var ret float64
+	for i := range a {
+		ret += a[i] * b[i]
+	}
+	return ret
+}
+
+// buildIndexArray builds an array of incremental integers
+// from 0 to n -1
+func buildIndexArray(n int) []int {
+	indexes := make([]int, n)
+	for i := range indexes {
+		indexes[i] = i
+	}
+	return indexes
+}
+
+// shuffleArray shuffles an array of integers.
+func shuffleArray(a *[]int) {
+	slice := *a
+	for i := range slice {
+		j := rand.Intn(i + 1)
+		slice[i], slice[j] = slice[j], slice[i]
+	}
 }
