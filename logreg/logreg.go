@@ -172,7 +172,7 @@ func (lr *LogisticRegression) InitializeFromFile(filename string) error {
 // Learn will use a stockastic gradient descent (SGD) algorithm
 // and update Wn vector acordingly.
 func (lr *LogisticRegression) Learn() error {
-
+	maxEpochs := 10000
 	lr.Epochs = 0
 	indexes := buildIndexArray(lr.TrainingPoints)
 	for {
@@ -187,6 +187,9 @@ func (lr *LogisticRegression) Learn() error {
 		}
 		lr.Epochs++
 		if lr.Converged(wOld) {
+			break
+		}
+		if lr.Epochs > maxEpochs {
 			break
 		}
 	}
