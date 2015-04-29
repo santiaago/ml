@@ -305,7 +305,23 @@ func evaluate(f linear.Function, x []float64) float64 {
 // Ein returns the in sample error of the current model.
 // todo(santiaago): compute Ein
 func (lr *LogisticRegression) Ein() float64 {
-	return 1
+	// XnWn
+	gInSample := make([]float64, len(lr.Xn))
+	for i := 0; i < len(lr.Xn); i++ {
+		gi, err := lr.Predict(lr.Xn[i])
+		if err != nil {
+			continue
+		}
+		gInSample[i] = ml.Sign(gi)
+	}
+
+	nEin := 0
+	for i := 0; i < len(gInSample); i++ {
+		if gInSample[i] != lr.Yn[i] {
+			nEin++
+		}
+	}
+	return float64(nEin) / float64(len(gInSample))
 }
 
 // Eout is the out of sample error of the logistic regression.

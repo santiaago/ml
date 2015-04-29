@@ -246,6 +246,50 @@ func TestConverged(t *testing.T) {
 	}
 }
 
+func TestEin(t *testing.T) {
+	lr := NewLogisticRegression()
+	lr.Xn = [][]float64{
+		{1, 0.1, 0.1},
+		{1, 0.2, 0.2},
+		{1, 0.3, 0.3},
+		{1, 0.4, 0.4},
+		{1, 0.5, 0.5},
+		{1, 0.6, 0.6},
+	}
+
+	tests := []struct {
+		Y           []float64
+		Wn          []float64
+		expectedEin float64
+	}{
+		{
+			[]float64{1, 1, 1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0.5,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{-1, 0, 0},
+			0,
+		},
+		{
+			[]float64{-1, -1, -1, -1, -1, -1},
+			[]float64{1, 0, 0},
+			1.0,
+		},
+	}
+
+	for _, tt := range tests {
+		lr.Yn = tt.Y
+		lr.Wn = tt.Wn
+		got := lr.Ein()
+		want := tt.expectedEin
+		if got != want {
+			t.Errorf("Ein is not correct, got %v, want %v", got, want)
+		}
+	}
+}
+
 func TestPredict(t *testing.T) {
 	tests := []struct {
 		w        []float64
