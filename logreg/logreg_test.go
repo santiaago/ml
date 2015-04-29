@@ -256,14 +256,27 @@ func TestEvaluate(t *testing.T) {
 }
 
 func TestCrossEntropyError(t *testing.T) {
-	sample := []float64{1, 1, 1}
-	y := float64(-1)
-	lr := NewLogisticRegression()
-	lr.Wn = []float64{1, 1, 1}
-	got := lr.CrossEntropyError(sample, y)
-	want := 3.048
-	if (got - want) > epsilon {
-		t.Errorf("test %v: got %v, want %v", 0, got, want)
+	tests := []struct {
+		sample []float64
+		y      float64
+		wn     []float64
+		want   float64
+	}{
+		{
+			sample: []float64{1, 1, 1},
+			y:      float64(-1),
+			wn:     []float64{1, 1, 1},
+			want:   3.048,
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.Wn = tt.wn
+		got := lr.CrossEntropyError(tt.sample, tt.y)
+		if (got - tt.want) > epsilon {
+			t.Errorf("test %v: got %v, want %v", i, got, tt.want)
+		}
 	}
 }
 
