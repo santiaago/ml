@@ -145,6 +145,30 @@ func TestUpdateWeights(t *testing.T) {
 			gradientVector: []float64{1, 1, 1},
 			want:           []float64{0.9, 0.9, 0.9},
 		},
+		{
+			eta:            0.5,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.5, 0.5, 0.5},
+		},
+		{
+			eta:            0,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{1, 1, 1},
+		},
+		{
+			eta:            0.1,
+			w:              []float64{0, 0, 0},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.1, 0.1, 0.1},
+		},
+		{
+			eta:            0.1,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{0, 0, 0},
+			want:           []float64{1, 1, 1},
+		},
 	}
 
 	for i, tt := range tests {
