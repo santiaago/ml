@@ -1,6 +1,7 @@
 package logreg
 
 import (
+	"math"
 	"testing"
 
 	"github.com/santiaago/ml/linear"
@@ -268,13 +269,31 @@ func TestCrossEntropyError(t *testing.T) {
 			wn:     []float64{1, 1, 1},
 			want:   3.048,
 		},
+		{
+			sample: []float64{1, 1, 1},
+			y:      float64(1),
+			wn:     []float64{1, 1, 1},
+			want:   0.048,
+		},
+		{
+			sample: []float64{1, 1, 1},
+			y:      float64(0),
+			wn:     []float64{1, 1, 1},
+			want:   0.693,
+		},
+		{
+			sample: []float64{1, 1, 1},
+			y:      float64(1),
+			wn:     []float64{0, 0, 0},
+			want:   0.693,
+		},
 	}
 
 	for i, tt := range tests {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.wn
 		got := lr.CrossEntropyError(tt.sample, tt.y)
-		if (got - tt.want) > epsilon {
+		if math.Abs(got-tt.want) > epsilon {
 			t.Errorf("test %v: got %v, want %v", i, got, tt.want)
 		}
 	}
