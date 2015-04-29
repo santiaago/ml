@@ -91,14 +91,26 @@ func TestLearn(t *testing.T) {
 }
 
 func TestGradient(t *testing.T) {
-	w := []float64{0, 0, 0}
-	y := float64(1)
-	lr := NewLogisticRegression()
-	lr.Wn = []float64{0, 0, 0, 0}
-	got := lr.Gradient(w, y)
-	want := []float64{-0.5, 0, 0, 0}
-	if !equal(got, want) {
-		t.Errorf("got Gradient = %v, want %v", got, want)
+	tests := []struct {
+		w    []float64
+		y    float64
+		wn   []float64
+		want []float64
+	}{
+		{
+			w:    []float64{0, 0, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, 0, 0, 0},
+		},
+	}
+	for _, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.Wn = tt.wn
+		got := lr.Gradient(tt.w, tt.y)
+		if !equal(got, tt.want) {
+			t.Errorf("got Gradient = %v, want %v", got, tt.want)
+		}
 	}
 }
 
