@@ -184,13 +184,25 @@ func TestUpdateWeights(t *testing.T) {
 }
 
 func TestConverged(t *testing.T) {
-	lr := NewLogisticRegression()
-	lr.Wn = []float64{0.1, 0.1, 0.1}
-	w := []float64{0.1, 0.1, 0.1}
-	got := lr.Converged(w)
-	want := true
-	if got != want {
-		t.Errorf("got converged = %v, wants %v", got, want)
+	tests := []struct {
+		wn   []float64
+		w    []float64
+		want bool
+	}{
+		{
+			wn:   []float64{0.1, 0.1, 0.1},
+			w:    []float64{0.1, 0.1, 0.1},
+			want: true,
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.Wn = tt.wn
+		got := lr.Converged(tt.w)
+		if got != tt.want {
+			t.Errorf("test %v: got converged = %v, wants %v", i, got, tt.want)
+		}
 	}
 }
 
