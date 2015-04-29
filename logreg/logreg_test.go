@@ -39,3 +39,33 @@ func TestInitialize(t *testing.T) {
 		}
 	}
 }
+
+func TestInitializeFromData(t *testing.T) {
+	data := [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+	lr := NewLogisticRegression()
+	if err := lr.InitializeFromData(data); err != nil {
+		t.Errorf("%v", err)
+	}
+	if len(lr.Xn) != len(data) || len(lr.Yn) != len(data) {
+		t.Errorf("got difference in size of Xn or Yn and data")
+	}
+
+	if len(lr.Xn) != lr.TrainingPoints {
+		t.Errorf("got difference in size of Xn or TrainingPoints and data")
+	}
+
+	if len(lr.Xn[0]) != len(lr.Wn) {
+		t.Errorf("got different size of vectors Xn Wn, wants same size")
+	}
+
+	if len(lr.Xn[0]) != lr.VectorSize || len(data[0]) != lr.VectorSize {
+		t.Errorf("got difference in size of Xn[0] or data[0] with VectorSize")
+	}
+}

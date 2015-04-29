@@ -74,6 +74,34 @@ func (lr *LogisticRegression) Initialize() {
 	}
 }
 
+// InitializeFromData reads a 2 dimentional array with the following format:
+// x1 x2 y
+// x1 x2 y
+// x1 x2 y
+// And sets Xn and Yn accordingly
+func (lr *LogisticRegression) InitializeFromData(data [][]float64) error {
+
+	n := 0
+	lr.Yn = make([]float64, len(data))
+	lr.Xn = make([][]float64, len(data))
+
+	for i, sample := range data {
+
+		lr.Xn[i] = make([]float64, len(sample))
+		lr.Xn[i] = []float64{1}
+		lr.Xn[i] = append(lr.Xn[i], sample[:len(sample)-1]...)
+
+		lr.Yn[i] = sample[len(sample)-1]
+		n++
+	}
+
+	lr.TrainingPoints = n
+	lr.VectorSize = len(lr.Xn[0])
+	lr.Wn = make([]float64, lr.VectorSize)
+
+	return nil
+}
+
 // Learn will use a stockastic gradient descent (SGD) algorithm
 // and update Wn vector acordingly.
 func (lr *LogisticRegression) Learn() {
@@ -101,7 +129,7 @@ func (lr *LogisticRegression) Learn() {
 // the current sample wi
 // the current target value:yi
 // the current weights: Wn
-func (logreg *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
+func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	v := make([]float64, len(wi)+1)
 	v[0] = yi
 	for i, x := range wi {
@@ -112,8 +140,8 @@ func (logreg *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	for i, _ := range wi {
 		a[i+1] = wi[i]
 	}
-	b := make([]float64, len(logreg.Wn))
-	copy(b, logreg.Wn)
+	b := make([]float64, len(lr.Wn))
+	copy(b, lr.Wn)
 	d := float64(1) + math.Exp(float64(yi)*dot(a, b))
 
 	//vG = [-1.0 * x / d for x in vector]
