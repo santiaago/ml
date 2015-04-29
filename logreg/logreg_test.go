@@ -90,6 +90,18 @@ func TestLearn(t *testing.T) {
 	}
 }
 
+func TestGradient(t *testing.T) {
+	w := []float64{0, 0, 0}
+	y := float64(1)
+	lr := NewLogisticRegression()
+	lr.Wn = []float64{0, 0, 0, 0}
+	got := lr.Gradient(w, y)
+	want := []float64{-0.5, 0, 0, 0}
+	if !equal(got, want) {
+		t.Errorf("got Gradient = %v, want %v", got, want)
+	}
+}
+
 const epsilon float64 = 0.001
 
 func equal(a, b []float64) bool {
