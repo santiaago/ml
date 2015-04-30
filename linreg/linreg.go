@@ -17,6 +17,7 @@ import (
 )
 
 // LinearRegression holds all the information needed to run the LinearRegression algorithm.
+//
 type LinearRegression struct {
 	TrainingPoints       int             // number of training points.
 	ValidationPoints     int             // number of validation point.
@@ -44,6 +45,7 @@ type LinearRegression struct {
 // RandomTargetFunction is true
 // Noise = 0
 // VectorSize = 3
+//
 func NewLinearRegression() *LinearRegression {
 	lr := LinearRegression{
 		TrainingPoints:       10,                        // default training points is 10
@@ -60,6 +62,7 @@ func NewLinearRegression() *LinearRegression {
 // * vector Xn with X0 = 1 and X1 and X2 random point in the defined input space.
 // * vector Yn the output of the random linear function on each point Xi. either -1 or +1  based on the linear function.
 // * vector Wn is set to zero.
+//
 func (lr *LinearRegression) Initialize() {
 
 	// generate random target function if asked to
@@ -91,6 +94,7 @@ func (lr *LinearRegression) Initialize() {
 }
 
 // flip returns 1 or -1 with respect to the amount of Noise present in the linear regression.
+//
 func (lr *LinearRegression) flip() float64 {
 	flip := float64(1)
 	if lr.Noise == 0 {
@@ -111,6 +115,7 @@ func (lr *LinearRegression) flip() float64 {
 // x1 x2 y
 // And sets Xn and Yn accordingly
 // todo(santiaago): make function accept any number of points and 'y'.
+//
 func (lr *LinearRegression) InitializeFromFile(filename string) error {
 
 	file, err := os.Open(filename)
@@ -169,6 +174,7 @@ func (lr *LinearRegression) InitializeFromFile(filename string) error {
 // x1 x2 y
 // x1 x2 y
 // And sets Xn and Yn accordingly
+//
 func (lr *LinearRegression) InitializeFromData(data [][]float64) error {
 
 	n := 0
@@ -197,6 +203,7 @@ func (lr *LinearRegression) InitializeFromData(data [][]float64) error {
 // x1 x2 y
 // x1 x2 y
 // And sets XVal and YVal accordingly
+//
 func (lr *LinearRegression) InitializeValidationFromData(data [][]float64) error {
 
 	lr.YVal = make([]float64, len(data))
@@ -219,6 +226,7 @@ func (lr *LinearRegression) InitializeValidationFromData(data [][]float64) error
 // ApplyTransformation sets Transform flag to true
 // and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
 // It Sets Wn size to the size of Xtrans.
+//
 func (lr *LinearRegression) ApplyTransformation() {
 	lr.HasTransform = true
 
@@ -232,6 +240,7 @@ func (lr *LinearRegression) ApplyTransformation() {
 
 // ApplyTransformationOnValidation transforms the XVal vector into
 // XValtrans = TransformationFunction(XVal)
+//
 func (lr *LinearRegression) ApplyTransformationOnValidation() {
 	for i := 0; i < lr.ValidationPoints; i++ {
 		Xtrans := lr.TransformFunction(lr.XVal[i])
@@ -241,6 +250,7 @@ func (lr *LinearRegression) ApplyTransformationOnValidation() {
 
 // Learn will compute the pseudo inverse X dager and set W vector accordingly
 // XDagger = (X'X)^-1 X'
+//
 func (lr *LinearRegression) Learn() error {
 
 	var err error
@@ -279,6 +289,7 @@ func (lr *LinearRegression) Learn() error {
 // setWeight updates the weights Wn of the given linear regression.
 // The weighs are updated by computing Wn = dagger * Yn
 // todo(santiaago): change this to Wn = d[i]*Yn
+//
 func (lr *LinearRegression) setWeight(d ml.Matrix) {
 
 	lr.Wn = make([]float64, lr.VectorSize)
@@ -292,6 +303,7 @@ func (lr *LinearRegression) setWeight(d ml.Matrix) {
 // setWeightReg updates the weights WReg of the given linear regression.
 // The weights are updated by computing WReg = dagger * Yn
 // todo(santiaago): change this to WReg = d[i]*Yn
+//
 func (lr *LinearRegression) setWeightReg(d ml.Matrix) {
 
 	lr.WReg = make([]float64, lr.VectorSize)
@@ -306,6 +318,7 @@ func (lr *LinearRegression) setWeightReg(d ml.Matrix) {
 // Ein returns the in sample error of the current linear regression model.
 // It is the fraction of in sample points which got misclassified.
 // todo(santiaago): change this to gi = d[i]*Yn
+//
 func (lr *LinearRegression) Ein() float64 {
 
 	// XnWn
@@ -327,9 +340,45 @@ func (lr *LinearRegression) Ein() float64 {
 	return float64(nEin) / float64(len(gInSample))
 }
 
+// Ecv returns the leave one out cross validation
+// in sample error of the current linear regression model.
+//
+func (lr *LinearRegression) Ecv() float64 {
+	x := lr.Xn
+	y := lr.Yn
+
+	nEcv := 0
+	for out := range lr.Xn {
+		outx, outy := lr.Xn[out], lr.Yn[out]
+		nlr := NewLinearRegression()
+		nlr.TrainingPoints = lr.TrainingPoints - 1
+		nlr.VectorSize = lr.VectorSize
+
+		nlr.Xn = append(x[:out], x[out+1:]...)
+		nlr.Yn = append(y[:out], y[out+1:]...)
+		if err := nlr.Learn(); err != nil {
+			nEcv++
+			continue
+		}
+
+		gi, err := nlr.Predict(outx)
+		if err != nil {
+			nEcv++
+			continue
+		}
+
+		if ml.Sign(gi) != outy {
+			nEcv++
+		}
+
+	}
+	return float64(nEcv) / float64(lr.TrainingPoints)
+}
+
 // EAugIn is the fraction of "in sample points" which got misclassified plus the term
 // lambda / N * Sum(Wi^2)
 // todo(santiaago): change this to use vector vector.
+//
 func (lr *LinearRegression) EAugIn() float64 {
 
 	gInSample := make([]float64, len(lr.Xn))
@@ -352,6 +401,7 @@ func (lr *LinearRegression) EAugIn() float64 {
 
 // EValIn returns the in sample error of the Validation points.
 // It is the fraction of misclassified points present in the Validation set XVal.
+//
 func (lr *LinearRegression) EValIn() float64 {
 
 	gInSample := make([]float64, len(lr.XVal))
@@ -375,6 +425,7 @@ func (lr *LinearRegression) EValIn() float64 {
 // Eout returns the out of sample error.
 // It is the fraction of out of sample points which got misclassified.
 // It generates 1000 out of sample points and classifies them.
+//
 func (lr *LinearRegression) Eout() float64 {
 	outOfSample := 1000
 	numError := 0
@@ -407,6 +458,7 @@ func (lr *LinearRegression) Eout() float64 {
 // EoutFromFile returns error in the out of sample data provided in the file.
 //  It only supports linear regressions with transformed data.
 // todo:(santiaago) make this more generic.
+//
 func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 
 	file, err := os.Open(filename)
@@ -463,6 +515,7 @@ func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 }
 
 // EAugOutFromFile returns the augmented error from an out of sample file
+//
 func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 
 	file, err := os.Open(filename)
@@ -516,6 +569,7 @@ func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 // LearnWeightDecay computes the following formula and update WReg.
 // (Z'Z+λI)^−1 * Z'
 // WReg = (Z'Z + λI)^−1 Z'y
+//
 func (lr *LinearRegression) LearnWeightDecay() error {
 	lr.Lambda = math.Pow(10, float64(lr.K))
 
@@ -573,6 +627,7 @@ func (lr *LinearRegression) LearnWeightDecay() error {
 
 // CompareInSample returns the number of points that are different between
 // the current hypothesis function learned by the linear regression with respect to 'f'
+//
 func (lr *LinearRegression) CompareInSample(f linear.Function) float64 {
 
 	gInSample := make([]float64, len(lr.Xn))
@@ -606,6 +661,7 @@ func (lr *LinearRegression) CompareInSample(f linear.Function) float64 {
 // current hypothesis function learned by the linear regression with respect to
 // 'f', the linear function passed as paral. The comparison is made on out of sample points
 // generated randomly in the defined interval.
+//
 func (lr *LinearRegression) CompareOutOfSample(f linear.Function) float64 {
 
 	outOfSample := 1000
@@ -633,10 +689,12 @@ func (lr *LinearRegression) CompareOutOfSample(f linear.Function) float64 {
 }
 
 // TransformFunc type is used to define transformation functions.
+//
 type TransformFunc func([]float64) []float64
 
 // TransformDataSet modifies Xn with the transformed function 'f' and updates the
 // size of vector Wn.
+//
 func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
 	for i := 0; i < len(lr.Xn); i++ {
 		oldXn := lr.Xn[i]
@@ -651,6 +709,7 @@ func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
 
 // Predict returns the result of the dot product between the x vector passed as param
 // and the linear regression vector of weights.
+//
 func (lr *LinearRegression) Predict(x []float64) (float64, error) {
 	if len(x) != len(lr.Wn) {
 		return 0, fmt.Errorf("Linreg.Predict, size of x and Wn vector are different")
@@ -665,6 +724,7 @@ func (lr *LinearRegression) Predict(x []float64) (float64, error) {
 // Predictions returns the prediction of each row of the 'data' passed in.
 // It make a prediction by calling lr.Predict on each row of the data.
 // If it fails to make a prediction it arbitrarly sets the result to 0
+//
 func (lr *LinearRegression) Predictions(data [][]float64) ([]float64, error) {
 
 	var predictions []float64
@@ -700,6 +760,7 @@ func (lr *LinearRegression) Predictions(data [][]float64) ([]float64, error) {
 // vector x is defined as x0, x1 .. , xn, y
 // So linear.Function should take sub vector [x1, ... ,xn]
 // todo: might change name to mapPoint
+//
 func evaluate(f linear.Function, x []float64) float64 {
 	last := len(x) - 1
 	if x[last] < f(x[1:last]) {
@@ -710,6 +771,7 @@ func evaluate(f linear.Function, x []float64) float64 {
 
 // String returns the string representation of the current
 // random function and the current data hold by vectors Xn, Yn and Wn.
+//
 func (lr *LinearRegression) String() string {
 	var ret string
 	ret = lr.Equation.String()
@@ -724,6 +786,7 @@ func (lr *LinearRegression) String() string {
 
 // LinearRegressionError returns the error defined by:
 // Ed[Ein(wlin)] = sigma^2 (1 - (d + 1)/ N)
+//
 func LinearRegressionError(n int, sigma float64, d int) float64 {
 	return sigma * sigma * (1 - (float64(d+1))/float64(n))
 }
