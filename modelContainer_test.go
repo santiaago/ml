@@ -12,6 +12,11 @@ type myModel struct {
 func (m myModel) Ein() float64 {
 	return m.score
 }
+
+func (m myModel) Ecv() float64 {
+	return m.score
+}
+
 func (m myModel) Learn() error {
 	return nil
 }
@@ -50,6 +55,26 @@ func TestSortModelContainersByEin(t *testing.T) {
 
 	for i, want := range Eins {
 		got := models[i].Model.Ein()
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	}
+}
+
+func TestSortModelContainersByEcv(t *testing.T) {
+	m1 := NewModelContainer(&myModel{3}, "mymodel", []int{1})
+	m2 := NewModelContainer(&myModel{2}, "mymodel", []int{1})
+	m3 := NewModelContainer(&myModel{1}, "mymodel", []int{1})
+	var models ModelContainers
+	models = append(models, m1)
+	models = append(models, m2)
+	models = append(models, m3)
+	sort.Sort(ByEcv(models))
+
+	Eins := []float64{1, 2, 3}
+
+	for i, want := range Eins {
+		got := models[i].Model.Ecv()
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}

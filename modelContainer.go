@@ -10,6 +10,7 @@ import (
 type Model interface {
 	Learn() error
 	Ein() float64
+	Ecv() float64
 }
 
 type ModelContainer struct {
@@ -41,6 +42,12 @@ type ByEin ModelContainers
 func (a ByEin) Len() int           { return len(a) }
 func (a ByEin) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByEin) Less(i, j int) bool { return a[i].Model.Ein() < a[j].Model.Ein() }
+
+type ByEcv ModelContainers
+
+func (a ByEcv) Len() int           { return len(a) }
+func (a ByEcv) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByEcv) Less(i, j int) bool { return a[i].Model.Ecv() < a[j].Model.Ecv() }
 
 func (models ModelContainers) PrintTop(n int) {
 	sort.Sort(models)
