@@ -290,6 +290,46 @@ func TestEin(t *testing.T) {
 	}
 }
 
+func TestEcv(t *testing.T) {
+	lr := NewLogisticRegression()
+	lr.TrainingPoints = 6
+	lr.Xn = [][]float64{
+		{1, -0.71, 0.331},
+		{1, 0.27, -0.95},
+		{1, -0.37, 0.12},
+		{1, -0.49, -0.52},
+		{1, 0.53, -0.11},
+		{1, 0.62, 0.9},
+	}
+
+	tests := []struct {
+		Y           []float64
+		expectedEcv float64
+	}{
+		{
+			Y:           []float64{1, 1, 1, 1, 1, 1},
+			expectedEcv: 0,
+		},
+		{
+			Y:           []float64{-1, -1, -1, -1, -1, -1},
+			expectedEcv: 0,
+		},
+		{
+			Y:           []float64{-1, 1, -1, 1, -1, 1},
+			expectedEcv: 0.5,
+		},
+	}
+
+	for i, tt := range tests {
+		lr.Yn = tt.Y
+		got := lr.Ecv()
+		want := tt.expectedEcv
+		if math.Abs(got-want) > epsilon {
+			t.Errorf("test %v: got Ecv = %v, want %v", i, got, want)
+		}
+	}
+}
+
 func TestApplyTransformation(t *testing.T) {
 
 	tf := func(a []float64) []float64 {

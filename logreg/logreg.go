@@ -346,6 +346,42 @@ func (lr *LogisticRegression) Ein() float64 {
 	return float64(nEin) / float64(len(gInSample))
 }
 
+// Ecv returns the leave one out cross validation
+// in sample error of the current logistic regression model.
+//
+func (lr *LogisticRegression) Ecv() float64 {
+	x := lr.Xn
+	y := lr.Yn
+
+	nEcv := 0
+	for out := range lr.Xn {
+		outx, outy := lr.Xn[out], lr.Yn[out]
+		nlr := NewLogisticRegression()
+		nlr.TrainingPoints = lr.TrainingPoints - 1
+		nlr.Wn = make([]float64, nlr.VectorSize)
+		nlr.VectorSize = lr.VectorSize
+
+		nlr.Xn = append(x[:out], x[out+1:]...)
+		nlr.Yn = append(y[:out], y[out+1:]...)
+		if err := nlr.Learn(); err != nil {
+			nEcv++
+			continue
+		}
+
+		gi, err := nlr.Predict(outx)
+		if err != nil {
+			nEcv++
+			continue
+		}
+
+		if ml.Sign(gi) != outy {
+			nEcv++
+		}
+
+	}
+	return float64(nEcv) / float64(lr.TrainingPoints)
+}
+
 // Eout is the out of sample error of the logistic regression.
 // It uses the cross entropy error given a generated data set and the weight vector Wn
 func (lr *LogisticRegression) Eout() float64 {
