@@ -36,6 +36,12 @@ func (slice ModelContainers) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
+type ByEin ModelContainers
+
+func (a ByEin) Len() int           { return len(a) }
+func (a ByEin) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByEin) Less(i, j int) bool { return a[i].Model.Ein() < a[j].Model.Ein() }
+
 func (models ModelContainers) PrintTop(n int) {
 	sort.Sort(models)
 	for i := 0; i < n && i < len(models); i++ {
