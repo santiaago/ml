@@ -29,8 +29,9 @@ type LogisticRegression struct {
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly chosen in Interval).
 	Yn                   []float64       // output, evaluation of each Xi based on the linear function.
 	Wn                   []float64       // weight vector.
-	VectorSize           int             // size of vectors Xi and Wi
-	Epochs               int             // number of epochs
+	VectorSize           int             // size of vectors Xi and Wi.
+	Epochs               int             // number of epochs.
+	MaxEpochs            int             // upper bound for the logistic regression model with it is not able to converge.
 }
 
 // NewLogisticRegression creates a logistic regression object.
@@ -46,6 +47,7 @@ func NewLogisticRegression() *LogisticRegression {
 		Eta:                  0.01,
 		Epsilon:              0.01,
 		VectorSize:           3,
+		MaxEpochs:            1000,
 	}
 	return &lr
 }
@@ -172,7 +174,6 @@ func (lr *LogisticRegression) InitializeFromFile(filename string) error {
 // Learn will use a stockastic gradient descent (SGD) algorithm
 // and update Wn vector acordingly.
 func (lr *LogisticRegression) Learn() error {
-	maxEpochs := 10000
 	lr.Epochs = 0
 	indexes := buildIndexArray(lr.TrainingPoints)
 	for {
@@ -189,7 +190,7 @@ func (lr *LogisticRegression) Learn() error {
 		if lr.Converged(wOld) {
 			break
 		}
-		if lr.Epochs > maxEpochs {
+		if lr.Epochs > lr.MaxEpochs {
 			break
 		}
 	}
