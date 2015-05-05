@@ -29,6 +29,7 @@ type LogisticRegression struct {
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly chosen in Interval).
 	Yn                   []float64       // output, evaluation of each Xi based on the linear function.
 	Wn                   []float64       // weight vector.
+	WReg                 []float64       // weight vector with regularization.
 	VectorSize           int             // size of vectors Xi and Wi.
 	Epochs               int             // number of epochs.
 	MaxEpochs            int             // upper bound for the logistic regression model with it is not able to converge.
@@ -207,17 +208,18 @@ func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	for i, x := range wi {
 		v[i+1] = yi * x
 	}
-	var a []float64
-	a = append(a, 1)
-	a = append(a, wi...)
-
+	a := make([]float64, len(wi)+1)
+	a[0] = 1
+	for i, _ := range wi {
+		a[i+1] = wi[i]
+	}
 	b := make([]float64, len(lr.Wn))
 	copy(b, lr.Wn)
 	d := float64(1) + math.Exp(float64(yi)*dot(a, b))
 
 	//vG = [-1.0 * x / d for x in vector]
 	vg := make([]float64, len(v))
-	for i := range v {
+	for i, _ := range v {
 		vg[i] = float64(-1) * v[i] / d
 	}
 	return vg
@@ -358,7 +360,7 @@ func (lr *LogisticRegression) Ecv() float64 {
 		outx, outy := lr.Xn[out], lr.Yn[out]
 		nlr := NewLogisticRegression()
 		nlr.TrainingPoints = lr.TrainingPoints - 1
-		nlr.Wn = make([]float64, nlr.VectorSize)
+		nlr.Wn = make([]float64, lr.VectorSize)
 		nlr.VectorSize = lr.VectorSize
 
 		nlr.Xn = append(x[:out], x[out+1:]...)
