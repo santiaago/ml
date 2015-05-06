@@ -190,7 +190,11 @@ func (lr *LogisticRegression) Learn() error {
 		for i := range indexes {
 			wi := lr.Xn[i][1:]
 			yi := lr.Yn[i]
-			gt := lr.Gradient(wi, yi)
+			gt, err := lr.Gradient(wi, yi)
+			if err != nil {
+				log.Printf("failed when calling Gradient with error: %v, exiting learning algorithm.\n", err)
+				return err
+			}
 			lr.UpdateWeights(gt)
 		}
 		lr.Epochs++
@@ -209,7 +213,7 @@ func (lr *LogisticRegression) Learn() error {
 // the current target value:yi
 // the current weights: Wn
 //
-func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
+func (lr *LogisticRegression) Gradient(wi []float64, yi float64) ([]float64, error) {
 	v := make([]float64, len(wi)+1)
 	v[0] = yi
 	for i, x := range wi {
@@ -222,14 +226,18 @@ func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	}
 	b := make([]float64, len(lr.Wn))
 	copy(b, lr.Wn)
-	d := float64(1) + math.Exp(float64(yi)*dot(a, b))
+	dot, err := ml.Vector(a).Dot(b)
+	if err != nil {
+		return nil, err
+	}
+	d := float64(1) + math.Exp(float64(yi)*dot)
 
 	//vG = [-1.0 * x / d for x in vector]
 	vg := make([]float64, len(v))
 	for i := range v {
 		vg[i] = float64(-1) * v[i] / d
 	}
-	return vg
+	return vg, nil
 }
 
 // UpdateWeights updates the weights given the current weights 'Wn',
@@ -325,7 +333,12 @@ func (lr *LogisticRegression) Converged(wOld []float64) bool {
 	for i := range wOld {
 		diff[i] = lr.Wn[i] - wOld[i]
 	}
-	return norm(diff) < lr.Epsilon
+	norm, err := ml.Vector(diff).Norm()
+	if err != nil {
+		log.Println("forcing convergence as we fail to compute norm.")
+		return true
+	}
+	return norm < lr.Epsilon
 }
 
 // evaluate returns +1 or -1 based on the point passed as argument
@@ -414,7 +427,13 @@ func (lr *LogisticRegression) Eout() float64 {
 			oX[j] = lr.Interval.RandFloat()
 		}
 		oY = evaluate(lr.TargetFunction, oX)
-		cee += lr.CrossEntropyError(oX, oY)
+		ccee, err := lr.CrossEntropyError(oX, oY)
+		if err != nil {
+			log.Println("Failed to compute CrossEntropyError, incrementing error and skiping.")
+			cee++
+			continue
+		}
+		cee += ccee
 	}
 	return cee / float64(outOfSample)
 }
@@ -424,8 +443,12 @@ func (lr *LogisticRegression) Eout() float64 {
 // vector Wn based on formula:
 // log(1 + exp(-y*sample*w))
 //
-func (lr *LogisticRegression) CrossEntropyError(sample []float64, Y float64) float64 {
-	return math.Log(float64(1) + math.Exp(-Y*dot(sample, lr.Wn)))
+func (lr *LogisticRegression) CrossEntropyError(sample []float64, Y float64) (float64, error) {
+	dot, err := ml.Vector(sample).Dot(lr.Wn)
+	if err != nil {
+		return 0, err
+	}
+	return math.Log(float64(1) + math.Exp(-Y*dot)), nil
 }
 
 // buildIndexArray builds an array of incremental integers

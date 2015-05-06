@@ -150,9 +150,12 @@ func TestGradient(t *testing.T) {
 	for i, tt := range tests {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.wn
-		got := lr.Gradient(tt.w, tt.y)
+		got, err := lr.Gradient(tt.w, tt.y)
+		if err != nil {
+			t.Errorf("test %v: got error %v", i, err)
+		}
 		if !equal(got, tt.want) {
-			t.Errorf("test %i: got Gradient = %v, want %v", i, got, tt.want)
+			t.Errorf("test %v: got Gradient = %v, want %v", i, got, tt.want)
 		}
 	}
 }
@@ -555,7 +558,10 @@ func TestCrossEntropyError(t *testing.T) {
 	for i, tt := range tests {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.wn
-		got := lr.CrossEntropyError(tt.sample, tt.y)
+		got, err := lr.CrossEntropyError(tt.sample, tt.y)
+		if err != nil {
+			t.Errorf("test %v: got error %v", i, err)
+		}
 		if math.Abs(got-tt.want) > epsilon {
 			t.Errorf("test %v: got %v, want %v", i, got, tt.want)
 		}
