@@ -428,28 +428,6 @@ func (lr *LogisticRegression) CrossEntropyError(sample []float64, Y float64) flo
 	return math.Log(float64(1) + math.Exp(-Y*dot(sample, lr.Wn)))
 }
 
-// norm performs the norm operation of the vector 'v' passed as argument.
-// todo(santiaago): move this to math.go or vector.go
-//
-func norm(v []float64) float64 {
-	return math.Sqrt(dot(v, v))
-}
-
-// dot performs the dot product of vectors 'a' and 'b'.
-// todo(santiaago): move this to math.go or vector.go
-//
-func dot(a, b []float64) float64 {
-	if len(a) != len(b) {
-		fmt.Println("Panic: lenght of a, and b should be equal")
-		panic(a)
-	}
-	var ret float64
-	for i := range a {
-		ret += a[i] * b[i]
-	}
-	return ret
-}
-
 // buildIndexArray builds an array of incremental integers
 // from 0 to n -1
 //
