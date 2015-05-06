@@ -32,6 +32,8 @@ type LogisticRegression struct {
 	Yn                   []float64       // output, evaluation of each Xi based on the linear function.
 	Wn                   []float64       // weight vector.
 	WReg                 []float64       // weight vector with regularization.
+	K                    int             // used for setting the value of lambda.
+	Lambda               float64         // used for regularization lambda = 10^-k
 	VectorSize           int             // size of vectors Xi and Wi.
 	Epochs               int             // number of epochs.
 	MaxEpochs            int             // upper bound for the logistic regression model with it is not able to converge.
@@ -52,6 +54,7 @@ func NewLogisticRegression() *LogisticRegression {
 		Epsilon:              0.01,
 		VectorSize:           3,
 		MaxEpochs:            1000,
+		K:                    -3,
 	}
 	return &lr
 }
@@ -258,6 +261,99 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) error {
 		newW[i] = (lr.Wn[i] - lr.Eta*gt[i])
 	}
 	lr.Wn = newW
+	return nil
+}
+
+// LearnRegularized will use a stockastic gradient descent (SGD) algorithm
+// with regularization, and update WReg vector accordingly.
+//
+func (lr *LogisticRegression) LearnRegularized() error {
+	lr.WReg = make([]float64, lr.VectorSize)
+	lr.Lambda = math.Pow(10, float64(lr.K))
+	lr.Epochs = 0
+	indexes := buildIndexArray(lr.TrainingPoints)
+
+	for {
+		shuffleArray(&indexes)
+		wOld := make([]float64, len(lr.WReg))
+		copy(wOld, lr.WReg)
+
+		for i := range indexes {
+			wi := lr.Xn[i][1:]
+			yi := lr.Yn[i]
+			gt, err := lr.GradientRegularized(wi, yi)
+			if err != nil {
+				log.Printf("failed when calling GradientRegularized with error: %v, exiting learning algorithm.\n", err)
+				return err
+			}
+			if err := lr.UpdateRegularizedWeights(gt); err != nil {
+				log.Printf("failed when calling UpdateRegularizedWeights with error: %v, exiting learning algorithm.\n", err)
+				return err
+			}
+		}
+		lr.Epochs++
+		if lr.Converged(wOld) {
+			break
+		}
+		if lr.Epochs > lr.MaxEpochs {
+			break
+		}
+	}
+	return nil
+}
+
+// GradientRegularized returns the regularized gradient vector with respect to:
+// the current sample wi
+// the current target value:yi
+// the current weights: WReg
+//
+func (lr *LogisticRegression) GradientRegularized(wi []float64, yi float64) ([]float64, error) {
+	v := make([]float64, len(wi)+1)
+	v[0] = yi
+	for i, x := range wi {
+		v[i+1] = yi * x
+	}
+	a := make([]float64, len(wi)+1)
+	a[0] = 1
+	for i := range wi {
+		a[i+1] = wi[i]
+	}
+	b := make([]float64, len(lr.WReg))
+	copy(b, lr.WReg)
+	dot, err := ml.Vector(a).Dot(b)
+	if err != nil {
+		return nil, err
+	}
+	d := float64(1) + math.Exp(float64(yi)*dot)
+
+	//vG = [-1.0 * x / d for x in vector] + lambda/N*Vector(wi)^2
+	wi2, err := ml.Vector(wi).Dot(wi)
+	if err != nil {
+		log.Println("skiping regularizer step due to %v", err)
+		wi2 = 1
+	}
+	reg := (lr.Lambda / float64(len(lr.WReg))) * wi2
+	vg := make([]float64, len(v))
+	for i := range v {
+		vg[i] = (float64(-1) * v[i] / d) + reg
+	}
+	return vg, nil
+}
+
+// UpdateRegularizedWeights updates the weights given the current weights 'WReg',
+// the gradient vector 'gt' using of the learning rate 'Eta'.
+//
+func (lr *LogisticRegression) UpdateRegularizedWeights(gt []float64) error {
+
+	if len(gt) != len(lr.WReg) {
+		return fmt.Errorf("length of WReg and gt should be equal")
+	}
+
+	newW := make([]float64, len(lr.WReg))
+	for i := range lr.WReg {
+		newW[i] = (lr.WReg[i] - lr.Eta*gt[i])
+	}
+	lr.WReg = newW
 	return nil
 }
 

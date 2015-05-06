@@ -115,6 +115,25 @@ func TestLearn(t *testing.T) {
 	}
 }
 
+func TestLearnRegularized(t *testing.T) {
+	lr := NewLogisticRegression()
+	data := [][]float64{
+		{0.1, 1, 1},
+		{0.2, 1, 1},
+		{0.3, 1, 1},
+		{1, 0.5, -1},
+		{1, 0.6, -1},
+		{1, 0.7, -1},
+	}
+
+	lr.InitializeFromData(data)
+	lr.LearnRegularized()
+	expectedWReg := []float64{-0.0002, -0.01215, 0.005837}
+	if !equal(expectedWReg, lr.WReg) {
+		t.Errorf("Weight vector is not correct: got %v, want %v", lr.WReg, expectedWReg)
+	}
+}
+
 func TestGradient(t *testing.T) {
 	tests := []struct {
 		w    []float64
@@ -151,6 +170,51 @@ func TestGradient(t *testing.T) {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.wn
 		got, err := lr.Gradient(tt.w, tt.y)
+		if err != nil {
+			t.Errorf("test %v: got error %v", i, err)
+		}
+		if !equal(got, tt.want) {
+			t.Errorf("test %v: got Gradient = %v, want %v", i, got, tt.want)
+		}
+	}
+}
+
+func TestGradientRegularized(t *testing.T) {
+	tests := []struct {
+		w    []float64
+		y    float64
+		wn   []float64
+		want []float64
+	}{
+		{
+			w:    []float64{0, 0, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, 0, 0, 0},
+		},
+		{
+			w:    []float64{1, 0, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, 0, 0},
+		},
+		{
+			w:    []float64{1, 1, 0},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, -0.5, 0},
+		},
+		{
+			w:    []float64{1, 1, 1},
+			y:    1,
+			wn:   []float64{0, 0, 0, 0},
+			want: []float64{-0.5, -0.5, -0.5, -0.5},
+		},
+	}
+	for i, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.WReg = tt.wn
+		got, err := lr.GradientRegularized(tt.w, tt.y)
 		if err != nil {
 			t.Errorf("test %v: got error %v", i, err)
 		}
@@ -208,6 +272,60 @@ func TestUpdateWeights(t *testing.T) {
 			t.Errorf("test %v: got error %v", i, err)
 		}
 		got := lr.Wn
+		if !equal(got, tt.want) {
+			t.Errorf("test %v: got Wn:%v, want %v", i, got, tt.want)
+		}
+	}
+}
+
+func TestUpdateRegularizedWeights(t *testing.T) {
+	tests := []struct {
+		eta            float64
+		w              []float64
+		gradientVector []float64
+		want           []float64
+	}{
+		{
+			eta:            0.1,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.9, 0.9, 0.9},
+		},
+		{
+			eta:            0.5,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.5, 0.5, 0.5},
+		},
+		{
+			eta:            0,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{1, 1, 1},
+		},
+		{
+			eta:            0.1,
+			w:              []float64{0, 0, 0},
+			gradientVector: []float64{1, 1, 1},
+			want:           []float64{0.1, 0.1, 0.1},
+		},
+		{
+			eta:            0.1,
+			w:              []float64{1, 1, 1},
+			gradientVector: []float64{0, 0, 0},
+			want:           []float64{1, 1, 1},
+		},
+	}
+
+	for i, tt := range tests {
+		lr := NewLogisticRegression()
+		lr.Eta = tt.eta
+		lr.WReg = tt.w
+		err := lr.UpdateRegularizedWeights(tt.gradientVector)
+		if err != nil {
+			t.Errorf("test %v: got error %v", i, err)
+		}
+		got := lr.WReg
 		if !equal(got, tt.want) {
 			t.Errorf("test %v: got Wn:%v, want %v", i, got, tt.want)
 		}
