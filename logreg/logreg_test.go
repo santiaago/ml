@@ -203,7 +203,10 @@ func TestUpdateWeights(t *testing.T) {
 		lr := NewLogisticRegression()
 		lr.Eta = tt.eta
 		lr.Wn = tt.w
-		lr.UpdateWeights(tt.gradientVector)
+		err := lr.UpdateWeights(tt.gradientVector)
+		if err != nil {
+			t.Errorf("test %v: got error %v", i, err)
+		}
 		got := lr.Wn
 		if !equal(got, tt.want) {
 			t.Errorf("test %v: got Wn:%v, want %v", i, got, tt.want)

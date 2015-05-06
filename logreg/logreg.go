@@ -195,7 +195,10 @@ func (lr *LogisticRegression) Learn() error {
 				log.Printf("failed when calling Gradient with error: %v, exiting learning algorithm.\n", err)
 				return err
 			}
-			lr.UpdateWeights(gt)
+			if err := lr.UpdateWeights(gt); err != nil {
+				log.Printf("failed when calling UpdateWeights with error: %v, exiting learning algorithm.\n", err)
+				return err
+			}
 		}
 		lr.Epochs++
 		if lr.Converged(wOld) {
@@ -243,12 +246,10 @@ func (lr *LogisticRegression) Gradient(wi []float64, yi float64) ([]float64, err
 // UpdateWeights updates the weights given the current weights 'Wn',
 // the gradient vector 'gt' using of the learning rate 'Eta'.
 //
-func (lr *LogisticRegression) UpdateWeights(gt []float64) {
+func (lr *LogisticRegression) UpdateWeights(gt []float64) error {
 
 	if len(gt) != len(lr.Wn) {
-		// todo(santiaago): should return error instead.
-		fmt.Println("Panic: length of Wn and gt should be equal")
-		panic(gt)
+		return fmt.Errorf("length of Wn and gt should be equal")
 	}
 
 	newW := make([]float64, len(lr.Wn))
@@ -256,6 +257,7 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 		newW[i] = (lr.Wn[i] - lr.Eta*gt[i])
 	}
 	lr.Wn = newW
+	return nil
 }
 
 // TransformFunc type is used to define transformation functions.
