@@ -1,3 +1,4 @@
+// Package logreg provide a set of logistic regression types and functions.
 package logreg
 
 import (
@@ -286,11 +287,7 @@ func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
 	if len(x) != len(lr.Wn) {
 		return 0, fmt.Errorf("logreg.Predict, size of x and Wn vector are different")
 	}
-	var p float64
-	for j := 0; j < len(x); j++ {
-		p += x[j] * lr.Wn[j]
-	}
-	return p, nil
+	return ml.Vector(x).Dot(lr.Wn)
 }
 
 // Predictions returns the prediction of each row of the 'data' passed in.
