@@ -15,6 +15,7 @@ import (
 )
 
 // LogisticRegression holds all the information needed to run the LogisticRegression algorithm.
+//
 type LogisticRegression struct {
 	TrainingPoints       int             // number of training points.
 	Dimension            int             // dimension.
@@ -40,6 +41,7 @@ type LogisticRegression struct {
 // Interval [-1 : 1]
 // Learning rate: 0.01
 // Epsilon: 0.01
+//
 func NewLogisticRegression() *LogisticRegression {
 	lr := LogisticRegression{
 		TrainingPoints:       100,
@@ -58,6 +60,7 @@ func NewLogisticRegression() *LogisticRegression {
 // * vector Xn with X0 = 1 and X1 and X2 random points in the defined input space.
 // * vector Yn the output of the random linear function on each point Xi. either -1 or +1 based on the linear function.
 // * vector Wn is set zeros.
+//
 func (lr *LogisticRegression) Initialize() {
 
 	// generate random target function if asked to
@@ -90,6 +93,7 @@ func (lr *LogisticRegression) Initialize() {
 // x1 x2 y
 // x1 x2 y
 // And sets Xn and Yn accordingly
+//
 func (lr *LogisticRegression) InitializeFromData(data [][]float64) error {
 
 	n := 0
@@ -119,6 +123,7 @@ func (lr *LogisticRegression) InitializeFromData(data [][]float64) error {
 // x1 x2 y
 // And sets Xn and Yn accordingly
 // todo(santiaago): make function accept any number of points and 'y'.
+//
 func (lr *LogisticRegression) InitializeFromFile(filename string) error {
 
 	file, err := os.Open(filename)
@@ -174,6 +179,7 @@ func (lr *LogisticRegression) InitializeFromFile(filename string) error {
 
 // Learn will use a stockastic gradient descent (SGD) algorithm
 // and update Wn vector acordingly.
+//
 func (lr *LogisticRegression) Learn() error {
 	lr.Epochs = 0
 	indexes := buildIndexArray(lr.TrainingPoints)
@@ -202,6 +208,7 @@ func (lr *LogisticRegression) Learn() error {
 // the current sample wi
 // the current target value:yi
 // the current weights: Wn
+//
 func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 	v := make([]float64, len(wi)+1)
 	v[0] = yi
@@ -227,6 +234,7 @@ func (lr *LogisticRegression) Gradient(wi []float64, yi float64) []float64 {
 
 // UpdateWeights updates the weights given the current weights 'Wn',
 // the gradient vector 'gt' using of the learning rate 'Eta'.
+//
 func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 
 	if len(gt) != len(lr.Wn) {
@@ -243,11 +251,13 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) {
 }
 
 // TransformFunc type is used to define transformation functions.
+//
 type TransformFunc func([]float64) []float64
 
 // ApplyTransformation sets Transform flag to true
 // and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
 // It Sets Wn size to the size of Xtrans.
+//
 func (lr *LogisticRegression) ApplyTransformation() {
 	lr.HasTransform = true
 
@@ -261,6 +271,7 @@ func (lr *LogisticRegression) ApplyTransformation() {
 
 // Predict returns the result of the dot product between the x vector passed as param
 // and the logistic regression vector of weights.
+//
 func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
 	if len(x) != len(lr.Wn) {
 		return 0, fmt.Errorf("logreg.Predict, size of x and Wn vector are different")
@@ -275,6 +286,7 @@ func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
 // Predictions returns the prediction of each row of the 'data' passed in.
 // It make a prediction by calling lr.Predict on each row of the data.
 // If it fails to make a prediction it arbitrarly sets the result to 0
+//
 func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 
 	var predictions []float64
@@ -309,6 +321,7 @@ func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 
 // Converged returns a boolean answer telling whether the old weight vector
 // and the new vector have converted based on the epsilon value.
+//
 func (lr *LogisticRegression) Converged(wOld []float64) bool {
 	diff := make([]float64, len(wOld))
 	for i := range wOld {
@@ -319,6 +332,7 @@ func (lr *LogisticRegression) Converged(wOld []float64) bool {
 
 // evaluate returns +1 or -1 based on the point passed as argument
 // and the function 'f'. if it stands on one side of the function it is +1 else -1
+//
 func evaluate(f linear.Function, x []float64) float64 {
 	last := len(x) - 1
 	if x[last] < f(x[1:last]) {
@@ -328,6 +342,7 @@ func evaluate(f linear.Function, x []float64) float64 {
 }
 
 // Ein returns the in sample error of the current model.
+//
 func (lr *LogisticRegression) Ein() float64 {
 	// XnWn
 	gInSample := make([]float64, len(lr.Xn))
@@ -385,7 +400,9 @@ func (lr *LogisticRegression) Ecv() float64 {
 }
 
 // Eout is the out of sample error of the logistic regression.
-// It uses the cross entropy error given a generated data set and the weight vector Wn
+// It uses the cross entropy error given a generated data set
+// and the weight vector Wn
+//
 func (lr *LogisticRegression) Eout() float64 {
 	outOfSample := 1000
 	cee := float64(0)
@@ -404,21 +421,25 @@ func (lr *LogisticRegression) Eout() float64 {
 	return cee / float64(outOfSample)
 }
 
-// CrossEntropyError computes the cross entropy error given a sample X and its target,
-// with respect to weight vector Wn based on formula:
+// CrossEntropyError computes the cross entropy error
+// given a sample X and its target, with respect to weight
+// vector Wn based on formula:
 // log(1 + exp(-y*sample*w))
+//
 func (lr *LogisticRegression) CrossEntropyError(sample []float64, Y float64) float64 {
 	return math.Log(float64(1) + math.Exp(-Y*dot(sample, lr.Wn)))
 }
 
 // norm performs the norm operation of the vector 'v' passed as argument.
 // todo(santiaago): move this to math.go or vector.go
+//
 func norm(v []float64) float64 {
 	return math.Sqrt(dot(v, v))
 }
 
 // dot performs the dot product of vectors 'a' and 'b'.
 // todo(santiaago): move this to math.go or vector.go
+//
 func dot(a, b []float64) float64 {
 	if len(a) != len(b) {
 		fmt.Println("Panic: lenght of a, and b should be equal")
@@ -433,6 +454,7 @@ func dot(a, b []float64) float64 {
 
 // buildIndexArray builds an array of incremental integers
 // from 0 to n -1
+//
 func buildIndexArray(n int) []int {
 	indexes := make([]int, n)
 	for i := range indexes {
@@ -442,6 +464,7 @@ func buildIndexArray(n int) []int {
 }
 
 // shuffleArray shuffles an array of integers.
+//
 func shuffleArray(a *[]int) {
 	slice := *a
 	for i := range slice {
