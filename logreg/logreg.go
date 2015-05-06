@@ -298,8 +298,6 @@ func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 
 		x = append(x, data[i]...)
 
-		// todo(santiaago):
-		// logreg should support transformation funcs
 		if lr.HasTransform {
 			x = lr.TransformFunction(x)
 		}
