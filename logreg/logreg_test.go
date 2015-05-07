@@ -128,7 +128,7 @@ func TestLearnRegularized(t *testing.T) {
 
 	lr.InitializeFromData(data)
 	lr.LearnRegularized()
-	expectedWReg := []float64{-0.0002, -0.01215, 0.005837}
+	expectedWReg := []float64{0.06538, -0.99309, 0.567615}
 	if !equal(expectedWReg, lr.WReg) {
 		t.Errorf("Weight vector is not correct: got %v, want %v", lr.WReg, expectedWReg)
 	}

@@ -292,7 +292,7 @@ func (lr *LogisticRegression) LearnRegularized() error {
 			}
 		}
 		lr.Epochs++
-		if lr.Converged(wOld) {
+		if lr.ConvergedRegularized(wOld) {
 			break
 		}
 		if lr.Epochs > lr.MaxEpochs {
@@ -427,6 +427,22 @@ func (lr *LogisticRegression) Converged(wOld []float64) bool {
 	diff := make([]float64, len(wOld))
 	for i := range wOld {
 		diff[i] = lr.Wn[i] - wOld[i]
+	}
+	norm, err := ml.Vector(diff).Norm()
+	if err != nil {
+		log.Println("forcing convergence as we fail to compute norm.")
+		return true
+	}
+	return norm < lr.Epsilon
+}
+
+// ConvergedRegularized returns a boolean answer telling whether the old weight vector
+// and the new vector have converted based on the epsilon value.
+//
+func (lr *LogisticRegression) ConvergedRegularized(wOld []float64) bool {
+	diff := make([]float64, len(wOld))
+	for i := range wOld {
+		diff[i] = lr.WReg[i] - wOld[i]
 	}
 	norm, err := ml.Vector(diff).Norm()
 	if err != nil {
