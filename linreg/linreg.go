@@ -378,6 +378,7 @@ func (lr *LinearRegression) Ecv() float64 {
 // EAugIn is the fraction of "in sample points" which got misclassified plus the term
 // lambda / N * Sum(Wi^2)
 // todo(santiaago): change this to use vector vector.
+// todo(santiaago): add term lambda / N * Sum(Wi^2)
 //
 func (lr *LinearRegression) EAugIn() float64 {
 

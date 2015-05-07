@@ -28,6 +28,7 @@ type LogisticRegression struct {
 	TargetFunction       linear.Function // random linear function.
 	TransformFunction    TransformFunc   // transformation function.
 	HasTransform         bool            // determines if logistic regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
+	IsRegularized        bool            // flag to determine if model is regularized or not.
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly chosen in Interval).
 	Yn                   []float64       // output, evaluation of each Xi based on the linear function.
 	Wn                   []float64       // weight vector.
@@ -268,6 +269,7 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) error {
 // with regularization, and update WReg vector accordingly.
 //
 func (lr *LogisticRegression) LearnRegularized() error {
+	lr.IsRegularized = true
 	lr.WReg = make([]float64, lr.VectorSize)
 	lr.Lambda = math.Pow(10, float64(lr.K))
 	lr.Epochs = 0
@@ -547,6 +549,37 @@ func (lr *LogisticRegression) Eout() float64 {
 		cee += ccee
 	}
 	return cee / float64(outOfSample)
+}
+
+// EAugIn is the fraction of "in sample points" which got misclassified plus the term
+// lambda / N * Sum(Wi^2)
+// todo(santiaago): change this to use vector vector.
+//
+func (lr *LogisticRegression) EAugIn() float64 {
+
+	gInSample := make([]float64, len(lr.Xn))
+	for i := 0; i < len(lr.Xn); i++ {
+		gi := float64(0)
+		for j := 0; j < len(lr.Xn[0]); j++ {
+			gi += lr.Xn[i][j] * lr.WReg[j]
+		}
+		gInSample[i] = ml.Sign(gi)
+	}
+	nEin := 0
+	for i := 0; i < len(gInSample); i++ {
+		if gInSample[i] != lr.Yn[i] {
+			nEin++
+		}
+	}
+
+	wi2, err := ml.Vector(lr.WReg).Dot(lr.WReg)
+	if err != nil {
+		log.Println("skiping regularizer step due to %v", err)
+		wi2 = 1
+	}
+	reg := (lr.Lambda / float64(len(lr.WReg))) * wi2
+
+	return float64(nEin)/float64(len(gInSample)) + reg
 }
 
 // CrossEntropyError computes the cross entropy error
