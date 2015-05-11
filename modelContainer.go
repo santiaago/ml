@@ -49,14 +49,25 @@ func (a ByEcv) Len() int           { return len(a) }
 func (a ByEcv) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByEcv) Less(i, j int) bool { return a[i].Model.Ecv() < a[j].Model.Ecv() }
 
-func (models ModelContainers) PrintTop(n int) {
-	sort.Sort(models)
+func (models ModelContainers) TopEin(n int) {
+	sort.Sort(ByEin(models))
 	for i := 0; i < n && i < len(models); i++ {
 		if models[i] == nil {
 			continue
 		}
 		m := models[i].Model
 		fmt.Printf("EIn = %f \t%s\n", m.Ein(), models[i].Name)
+	}
+}
+
+func (models ModelContainers) TopEcv(n int) {
+	sort.Sort(ByEcv(models))
+	for i := 0; i < n && i < len(models); i++ {
+		if models[i] == nil {
+			continue
+		}
+		m := models[i].Model
+		fmt.Printf("Ecv = %f \t%s\n", m.Ecv(), models[i].Name)
 	}
 }
 
