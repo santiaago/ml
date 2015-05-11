@@ -37,6 +37,11 @@ type LinearRegression struct {
 	WReg                 []float64       // weight vector with regularization.
 	Lambda               float64         // used in weight decay.
 	K                    int             // used in weight decay.
+	computedEin          bool            // flag that tells if Ein has already been computed.
+	ein                  float64         // last computed in sample error.
+	computedEcv          bool            // flag that tells if Ecv has already been computed.
+	ecv                  float64         // last computed cross validation error.
+
 }
 
 // NewLinearRegression creates a linear regression object.
@@ -320,6 +325,9 @@ func (lr *LinearRegression) setWeightReg(d ml.Matrix) {
 // todo(santiaago): change this to gi = d[i]*Yn
 //
 func (lr *LinearRegression) Ein() float64 {
+	if lr.computedEin {
+		return lr.ein
+	}
 
 	// XnWn
 	gInSample := make([]float64, len(lr.Xn))
@@ -337,13 +345,20 @@ func (lr *LinearRegression) Ein() float64 {
 			nEin++
 		}
 	}
-	return float64(nEin) / float64(len(gInSample))
+	ein := float64(nEin) / float64(len(gInSample))
+	lr.computedEin = true
+	lr.ein = ein
+
+	return ein
 }
 
 // Ecv returns the leave one out cross validation
 // in sample error of the current linear regression model.
 //
 func (lr *LinearRegression) Ecv() float64 {
+	if lr.computedEcv {
+		return lr.ecv
+	}
 	x := lr.Xn
 	y := lr.Yn
 
@@ -372,7 +387,10 @@ func (lr *LinearRegression) Ecv() float64 {
 		}
 
 	}
-	return float64(nEcv) / float64(lr.TrainingPoints)
+	ecv := float64(nEcv) / float64(lr.TrainingPoints)
+	lr.computedEcv = true
+	lr.ecv = ecv
+	return ecv
 }
 
 // EAugIn is the fraction of "in sample points" which got misclassified plus the term
