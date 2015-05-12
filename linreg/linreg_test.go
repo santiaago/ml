@@ -146,11 +146,11 @@ func TestInitializeValidationFromData(t *testing.T) {
 
 func TestApplyTransformation(t *testing.T) {
 
-	tf := func(a []float64) []float64 {
+	tf := func(a []float64) ([]float64, error) {
 		for i := 1; i < len(a); i++ {
 			a[i] = -a[i]
 		}
-		return a
+		return a, nil
 	}
 
 	data := [][]float64{
@@ -181,11 +181,11 @@ func TestApplyTransformation(t *testing.T) {
 }
 
 func TestApplyTransformationOnValidation(t *testing.T) {
-	tf := func(a []float64) []float64 {
+	tf := func(a []float64) ([]float64, error) {
 		for i := 1; i < len(a); i++ {
 			a[i] = -a[i]
 		}
-		return a
+		return a, nil
 	}
 
 	data := [][]float64{
@@ -315,6 +315,7 @@ func TestEin(t *testing.T) {
 		lr.Yn = tt.Y
 		lr.Wn = tt.Wn
 		got := lr.Ein()
+		lr.computedEin = false
 		want := tt.expectedEin
 		if got != want {
 			t.Errorf("Ein is not correct, got %v, want %v", got, want)
@@ -355,6 +356,7 @@ func TestEcv(t *testing.T) {
 	for i, tt := range tests {
 		lr.Yn = tt.Y
 		got := lr.Ecv()
+		lr.computedEcv = false
 		want := tt.expectedEcv
 		if math.Abs(got-want) > epsilon {
 			t.Errorf("test %v: got Ecv = %v, want %v", i, got, want)
@@ -497,8 +499,8 @@ func TestEoutAndEinAreCloseWithEnoughTraining(t *testing.T) {
 
 func TestEoutFromFile(t *testing.T) {
 	lr := NewLinearRegression()
-	lr.TransformFunction = func(x []float64) []float64 {
-		return x
+	lr.TransformFunction = func(x []float64) ([]float64, error) {
+		return x, nil
 	}
 	tests := []struct {
 		f            TransformFunc
@@ -506,12 +508,12 @@ func TestEoutFromFile(t *testing.T) {
 		expectedEout float64
 	}{
 		{
-			func(x []float64) []float64 { return x },
+			func(x []float64) ([]float64, error) { return x, nil },
 			[]float64{-1, 0, 0},
 			1,
 		},
 		{
-			func(x []float64) []float64 { return x },
+			func(x []float64) ([]float64, error) { return x, nil },
 			[]float64{1, 0, 0},
 			0,
 		},
@@ -532,8 +534,8 @@ func TestEoutFromFile(t *testing.T) {
 
 func TestEAugOutFromFile(t *testing.T) {
 	lr := NewLinearRegression()
-	lr.TransformFunction = func(x []float64) []float64 {
-		return x
+	lr.TransformFunction = func(x []float64) ([]float64, error) {
+		return x, nil
 	}
 	tests := []struct {
 		f            TransformFunc
@@ -541,12 +543,12 @@ func TestEAugOutFromFile(t *testing.T) {
 		expectedEout float64
 	}{
 		{
-			func(x []float64) []float64 { return x },
+			func(x []float64) ([]float64, error) { return x, nil },
 			[]float64{-1, 0, 0},
 			1,
 		},
 		{
-			func(x []float64) []float64 { return x },
+			func(x []float64) ([]float64, error) { return x, nil },
 			[]float64{1, 0, 0},
 			0,
 		},
@@ -700,11 +702,11 @@ func TestTransformDataSet(t *testing.T) {
 				{1, 1, 1},
 				{1, 1, 1},
 			},
-			transformFunction: func(x []float64) []float64 {
+			transformFunction: func(x []float64) ([]float64, error) {
 				var xt []float64
 				xt = append(xt, x...)
 				xt = append(xt, 1)
-				return xt
+				return xt, nil
 			},
 			newSize: 4,
 			expected: [][]float64{
@@ -719,13 +721,13 @@ func TestTransformDataSet(t *testing.T) {
 				{4, 5, 6},
 				{7, 8, 9},
 			},
-			transformFunction: func(x []float64) []float64 {
+			transformFunction: func(x []float64) ([]float64, error) {
 				var xt []float64
 				xt = append(xt, 1)
 				for i := range x {
 					xt = append(xt, x[i]*x[i])
 				}
-				return xt
+				return xt, nil
 			},
 			newSize: 4,
 			expected: [][]float64{

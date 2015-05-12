@@ -232,25 +232,33 @@ func (lr *LinearRegression) InitializeValidationFromData(data [][]float64) error
 // and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
 // It Sets Wn size to the size of Xtrans.
 //
-func (lr *LinearRegression) ApplyTransformation() {
+func (lr *LinearRegression) ApplyTransformation() error {
 	lr.HasTransform = true
 
 	for i := 0; i < lr.TrainingPoints; i++ {
-		Xtrans := lr.TransformFunction(lr.Xn[i])
-		lr.Xn[i] = Xtrans
+		if Xtrans, err := lr.TransformFunction(lr.Xn[i]); err == nil {
+			lr.Xn[i] = Xtrans
+		} else {
+			return err
+		}
 	}
 	lr.VectorSize = len(lr.Xn[0])
 	lr.Wn = make([]float64, lr.VectorSize)
+	return nil
 }
 
 // ApplyTransformationOnValidation transforms the XVal vector into
 // XValtrans = TransformationFunction(XVal)
 //
-func (lr *LinearRegression) ApplyTransformationOnValidation() {
+func (lr *LinearRegression) ApplyTransformationOnValidation() error {
 	for i := 0; i < lr.ValidationPoints; i++ {
-		Xtrans := lr.TransformFunction(lr.XVal[i])
-		lr.XVal[i] = Xtrans
+		if Xtrans, err := lr.TransformFunction(lr.XVal[i]); err == nil {
+			lr.XVal[i] = Xtrans
+		} else {
+			return err
+		}
 	}
+	return nil
 }
 
 // Learn will compute the pseudo inverse X dager and set W vector accordingly
@@ -513,7 +521,12 @@ func (lr *LinearRegression) EoutFromFile(filename string) (float64, error) {
 			return 0, err
 		}
 
-		oX := lr.TransformFunction([]float64{1, oX1, oX2})
+		oX, err := lr.TransformFunction([]float64{1, oX1, oX2})
+		if err != nil {
+			numError++
+			n++
+			continue
+		}
 
 		gi, err := lr.Predict(oX)
 		if err != nil {
@@ -566,7 +579,10 @@ func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 			return 0, err
 		}
 
-		oX := lr.TransformFunction([]float64{1, oX1, oX2})
+		var oX []float64
+		if oX, err = lr.TransformFunction([]float64{1, oX1, oX2}); err != nil {
+			return 0, err
+		}
 
 		if oY, err = strconv.ParseFloat(line[2], 64); err != nil {
 			return 0, err
@@ -709,21 +725,26 @@ func (lr *LinearRegression) CompareOutOfSample(f linear.Function) float64 {
 
 // TransformFunc type is used to define transformation functions.
 //
-type TransformFunc func([]float64) []float64
+type TransformFunc func([]float64) ([]float64, error)
 
 // TransformDataSet modifies Xn with the transformed function 'f' and updates the
 // size of vector Wn.
 //
-func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) {
+func (lr *LinearRegression) TransformDataSet(f TransformFunc, newSize int) error {
 	for i := 0; i < len(lr.Xn); i++ {
 		oldXn := lr.Xn[i]
-		newXn := f(oldXn)
+		newXn, err := f(oldXn)
+		if err != nil {
+			return err
+		}
+
 		lr.Xn[i] = make([]float64, newSize)
 		for j := 0; j < len(newXn); j++ {
 			lr.Xn[i][j] = newXn[j]
 		}
 	}
 	lr.Wn = make([]float64, newSize)
+	return nil
 }
 
 // Predict returns the result of the dot product between the x vector passed as param
@@ -745,7 +766,7 @@ func (lr *LinearRegression) Predict(x []float64) (float64, error) {
 // If it fails to make a prediction it arbitrarly sets the result to 0
 //
 func (lr *LinearRegression) Predictions(data [][]float64) ([]float64, error) {
-
+	var err error
 	var predictions []float64
 	for i := 0; i < len(data); i++ {
 
@@ -756,7 +777,9 @@ func (lr *LinearRegression) Predictions(data [][]float64) ([]float64, error) {
 		x = append(x, data[i]...)
 
 		if lr.HasTransform {
-			x = lr.TransformFunction(x)
+			if x, err = lr.TransformFunction(x); err != nil {
+				return nil, err
+			}
 		}
 
 		gi, err := lr.Predict(x)
