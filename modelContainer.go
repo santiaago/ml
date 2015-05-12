@@ -84,18 +84,3 @@ func ModelsFromFuncs(dc data.Container, funcs []func(data.Container) (*ModelCont
 	}
 	return
 }
-
-// ModelsFromMetaFuncs returns an array of modelContrainer that
-// merges the result of each func present in the 'funcs' array passed
-// as param.
-// Each of those functions takes as argument a data.Container and return
-// an array of model Containers.
-func ModelsFromMetaFuncs(dc data.Container, funcs []func(data.Container) ModelContainers) ModelContainers {
-
-	var allModels ModelContainers
-	for _, f := range funcs {
-		models := f(dc)
-		allModels = append(allModels, models...)
-	}
-	return allModels
-}
