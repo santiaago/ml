@@ -37,9 +37,9 @@ type LinearRegression struct {
 	WReg                 []float64       // weight vector with regularization.
 	Lambda               float64         // used in weight decay.
 	K                    int             // used in weight decay.
-	computedEin          bool            // flag that tells if Ein has already been computed.
+	ComputedEin          bool            // flag that tells if Ein has already been computed.
 	ein                  float64         // last computed in sample error.
-	computedEcv          bool            // flag that tells if Ecv has already been computed.
+	ComputedEcv          bool            // flag that tells if Ecv has already been computed.
 	ecv                  float64         // last computed cross validation error.
 
 }
@@ -333,7 +333,7 @@ func (lr *LinearRegression) setWeightReg(d ml.Matrix) {
 // todo(santiaago): change this to gi = d[i]*Yn
 //
 func (lr *LinearRegression) Ein() float64 {
-	if lr.computedEin {
+	if lr.ComputedEin {
 		return lr.ein
 	}
 
@@ -354,7 +354,7 @@ func (lr *LinearRegression) Ein() float64 {
 		}
 	}
 	ein := float64(nEin) / float64(len(gInSample))
-	lr.computedEin = true
+	lr.ComputedEin = true
 	lr.ein = ein
 
 	return ein
@@ -364,28 +364,44 @@ func (lr *LinearRegression) Ein() float64 {
 // in sample error of the current linear regression model.
 //
 func (lr *LinearRegression) Ecv() float64 {
-	if lr.computedEcv {
+	if lr.ComputedEcv {
 		return lr.ecv
 	}
+
 	x := lr.Xn
 	y := lr.Yn
 
 	nEcv := 0
 	for out := range lr.Xn {
-		outx, outy := lr.Xn[out], lr.Yn[out]
+		outx, outy := x[out], y[out]
 		nlr := NewLinearRegression()
+		*nlr = *lr
+		nlr.ComputedEcv = false
 		nlr.TrainingPoints = lr.TrainingPoints - 1
-		nlr.VectorSize = lr.VectorSize
 
-		nlr.Xn = append(x[:out], x[out+1:]...)
-		nlr.Yn = append(y[:out], y[out+1:]...)
+		nlr.Xn = [][]float64{}
+		nlr.Yn = []float64{}
+		for i := range x {
+			if i == out {
+				continue
+			}
+			nlr.Xn = append(nlr.Xn, x[i])
+			nlr.Yn = append(nlr.Yn, y[i])
+		}
+
+		// todo(santiaago): make a blog post out of this...
+		// lr.Xn = append(x[:out], x[out+1:]...)
+		// lr.Yn = append(y[:out], y[out+1:]...)
+
 		if err := nlr.Learn(); err != nil {
+			log.Println("learn error", err)
 			nEcv++
 			continue
 		}
 
 		gi, err := nlr.Predict(outx)
 		if err != nil {
+			log.Println("predict error", err)
 			nEcv++
 			continue
 		}
@@ -396,7 +412,7 @@ func (lr *LinearRegression) Ecv() float64 {
 
 	}
 	ecv := float64(nEcv) / float64(lr.TrainingPoints)
-	lr.computedEcv = true
+	lr.ComputedEcv = true
 	lr.ecv = ecv
 	return ecv
 }
