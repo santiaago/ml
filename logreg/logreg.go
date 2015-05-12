@@ -361,21 +361,26 @@ func (lr *LogisticRegression) UpdateRegularizedWeights(gt []float64) error {
 
 // TransformFunc type is used to define transformation functions.
 //
-type TransformFunc func([]float64) []float64
+type TransformFunc func([]float64) ([]float64, error)
 
 // ApplyTransformation sets Transform flag to true
 // and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
 // It Sets Wn size to the size of Xtrans.
 //
-func (lr *LogisticRegression) ApplyTransformation() {
+func (lr *LogisticRegression) ApplyTransformation() error {
 	lr.HasTransform = true
 
 	for i := 0; i < lr.TrainingPoints; i++ {
-		Xtrans := lr.TransformFunction(lr.Xn[i])
-		lr.Xn[i] = Xtrans
+		if Xtrans, err := lr.TransformFunction(lr.Xn[i]); err == nil {
+			lr.Xn[i] = Xtrans
+		} else {
+			return err
+		}
+
 	}
 	lr.VectorSize = len(lr.Xn[0])
 	lr.Wn = make([]float64, lr.VectorSize)
+	return nil
 }
 
 // Predict returns the result of the dot product between the x vector passed as param
@@ -394,6 +399,7 @@ func (lr *LogisticRegression) Predict(x []float64) (float64, error) {
 //
 func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 
+	var err error
 	var predictions []float64
 	for i := 0; i < len(data); i++ {
 
@@ -404,13 +410,14 @@ func (lr *LogisticRegression) Predictions(data [][]float64) ([]float64, error) {
 		x = append(x, data[i]...)
 
 		if lr.HasTransform {
-			x = lr.TransformFunction(x)
+			if x, err = lr.TransformFunction(x); err != nil {
+				return nil, err
+			}
 		}
 
 		gi, err := lr.Predict(x)
 		if err != nil {
-			predictions = append(predictions, 0)
-			continue
+			return nil, err
 		}
 
 		if ml.Sign(gi) == float64(1) {

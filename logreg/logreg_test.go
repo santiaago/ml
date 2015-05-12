@@ -456,11 +456,11 @@ func TestEcv(t *testing.T) {
 
 func TestApplyTransformation(t *testing.T) {
 
-	tf := func(a []float64) []float64 {
+	tf := func(a []float64) ([]float64, error) {
 		for i := 1; i < len(a); i++ {
 			a[i] = -a[i]
 		}
-		return a
+		return a, nil
 	}
 
 	data := [][]float64{
@@ -598,7 +598,7 @@ func TestPredictions(t *testing.T) {
 				{4, 5},
 				{4, 5, 6},
 			},
-			expected: []float64{32, 0, 0, 0, 32},
+			err: "vector are different",
 		},
 	}
 
@@ -606,7 +606,9 @@ func TestPredictions(t *testing.T) {
 		lr := NewLogisticRegression()
 		lr.Wn = tt.w
 		if got, err := lr.Predictions(tt.data); err != nil {
-			t.Errorf("test %v: got error %v, want %v", i, err, tt.err)
+			if !strings.Contains(errstring(err), tt.err) {
+				t.Errorf("test %v: got error %v, want %v", i, err, tt.err)
+			}
 		} else if !equal(got, tt.expected) {
 			t.Errorf("test %v: got %v ,want %v", i, got, tt.expected)
 		}
