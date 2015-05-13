@@ -536,11 +536,19 @@ func (lr *LogisticRegression) Ecv() float64 {
 			nlr.Yn = append(nlr.Yn, y[i])
 		}
 
-		// nlr.Xn = append(x[:out], x[out+1:]...)
-		// nlr.Yn = append(y[:out], y[out+1:]...)
-		if err := nlr.Learn(); err != nil {
-			nEcv++
-			continue
+		if nlr.IsRegularized {
+			if err := nlr.LearnRegularized(); err != nil {
+				log.Println("LearnRegularized error", err)
+				nEcv++
+				continue
+			}
+			nlr.Wn = nlr.WReg
+		} else {
+			if err := nlr.Learn(); err != nil {
+				log.Println("Learn error", err)
+				nEcv++
+				continue
+			}
 		}
 
 		gi, err := nlr.Predict(outx)

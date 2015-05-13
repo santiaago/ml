@@ -390,19 +390,24 @@ func (lr *LinearRegression) Ecv() float64 {
 			nlr.Yn = append(nlr.Yn, y[i])
 		}
 
-		// todo(santiaago): make a blog post out of this...
-		// lr.Xn = append(x[:out], x[out+1:]...)
-		// lr.Yn = append(y[:out], y[out+1:]...)
-
-		if err := nlr.Learn(); err != nil {
-			log.Println("learn error", err)
-			nEcv++
-			continue
+		if lr.IsRegularized {
+			if err := nlr.LearnWeightDecay(); err != nil {
+				log.Println("LearnWeightDecay error", err)
+				nEcv++
+				continue
+			}
+			nlr.Wn = nlr.WReg
+		} else {
+			if err := nlr.Learn(); err != nil {
+				log.Println("Learn error", err)
+				nEcv++
+				continue
+			}
 		}
 
 		gi, err := nlr.Predict(outx)
 		if err != nil {
-			log.Println("predict error", err)
+			log.Println("Predict error", err)
 			nEcv++
 			continue
 		}
