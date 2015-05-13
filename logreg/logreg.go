@@ -519,6 +519,7 @@ func (lr *LogisticRegression) Ecv() float64 {
 
 	nEcv := 0
 	for out := range lr.Xn {
+		fmt.Printf("\rLeave %v out of %v", out, len(lr.Xn))
 		outx, outy := lr.Xn[out], lr.Yn[out]
 		nlr := NewLogisticRegression()
 		nlr.TrainingPoints = lr.TrainingPoints - 1

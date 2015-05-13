@@ -365,15 +365,14 @@ func (lr *LinearRegression) Ein() float64 {
 // in sample error of the current linear regression model.
 //
 func (lr *LinearRegression) Ecv() float64 {
-	lr.ComputedEcv = false
 	if lr.ComputedEcv {
 		return lr.ecv
 	}
-
 	x := lr.Xn
 	y := lr.Yn
 	nEcv := 0
 	for out := range lr.Xn {
+		fmt.Printf("\rLeave %v out of %v", out, len(lr.Xn))
 		outx, outy := x[out], y[out]
 		nlr := NewLinearRegression()
 		*nlr = *lr
