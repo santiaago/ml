@@ -38,6 +38,10 @@ type LogisticRegression struct {
 	VectorSize           int             // size of vectors Xi and Wi.
 	Epochs               int             // number of epochs.
 	MaxEpochs            int             // upper bound for the logistic regression model with it is not able to converge.
+	ComputedEin          bool            // flag that tells if Ein has already been computed.
+	ein                  float64         // last computed in sample error.
+	ComputedEcv          bool            // flag that tells if Ecv has already been computed.
+	ecv                  float64         // last computed cross validation error.
 }
 
 // NewLogisticRegression creates a logistic regression object.
@@ -475,6 +479,10 @@ func evaluate(f linear.Function, x []float64) float64 {
 // Ein returns the in sample error of the current model.
 //
 func (lr *LogisticRegression) Ein() float64 {
+	if lr.ComputedEin {
+		return lr.ein
+	}
+
 	// XnWn
 	gInSample := make([]float64, len(lr.Xn))
 	for i := 0; i < len(lr.Xn); i++ {
@@ -491,13 +499,22 @@ func (lr *LogisticRegression) Ein() float64 {
 			nEin++
 		}
 	}
-	return float64(nEin) / float64(len(gInSample))
+	ein := float64(nEin) / float64(len(gInSample))
+	lr.ComputedEin = true
+	lr.ein = ein
+
+	return ein
+
 }
 
 // Ecv returns the leave one out cross validation
 // in sample error of the current logistic regression model.
 //
 func (lr *LogisticRegression) Ecv() float64 {
+	if lr.ComputedEcv {
+		return lr.ecv
+	}
+
 	x := lr.Xn
 	y := lr.Yn
 
@@ -509,8 +526,18 @@ func (lr *LogisticRegression) Ecv() float64 {
 		nlr.Wn = make([]float64, lr.VectorSize)
 		nlr.VectorSize = lr.VectorSize
 
-		nlr.Xn = append(x[:out], x[out+1:]...)
-		nlr.Yn = append(y[:out], y[out+1:]...)
+		nlr.Xn = [][]float64{}
+		nlr.Yn = []float64{}
+		for i := range x {
+			if i == out {
+				continue
+			}
+			nlr.Xn = append(nlr.Xn, x[i])
+			nlr.Yn = append(nlr.Yn, y[i])
+		}
+
+		// nlr.Xn = append(x[:out], x[out+1:]...)
+		// nlr.Yn = append(y[:out], y[out+1:]...)
 		if err := nlr.Learn(); err != nil {
 			nEcv++
 			continue
@@ -527,7 +554,10 @@ func (lr *LogisticRegression) Ecv() float64 {
 		}
 
 	}
-	return float64(nEcv) / float64(lr.TrainingPoints)
+	ecv := float64(nEcv) / float64(lr.TrainingPoints)
+	lr.ComputedEcv = true
+	lr.ecv = ecv
+	return ecv
 }
 
 // Eout is the out of sample error of the logistic regression.

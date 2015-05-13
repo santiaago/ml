@@ -403,13 +403,14 @@ func TestEin(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		lr.Yn = tt.Y
 		lr.Wn = tt.Wn
 		got := lr.Ein()
+		lr.ComputedEin = false
 		want := tt.expectedEin
 		if got != want {
-			t.Errorf("Ein is not correct, got %v, want %v", got, want)
+			t.Errorf("test %v Ein is not correct, got %v, want %v", i, got, want)
 		}
 	}
 }
@@ -440,12 +441,13 @@ func TestEcv(t *testing.T) {
 		},
 		{
 			Y:           []float64{-1, 1, -1, 1, -1, 1},
-			expectedEcv: 0.5,
+			expectedEcv: 1,
 		},
 	}
 
 	for i, tt := range tests {
 		lr.Yn = tt.Y
+		lr.ComputedEcv = false
 		got := lr.Ecv()
 		want := tt.expectedEcv
 		if math.Abs(got-want) > epsilon {
