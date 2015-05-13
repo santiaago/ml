@@ -28,6 +28,7 @@ type LinearRegression struct {
 	TargetFunction       linear.Function // linear target function to predict.
 	TransformFunction    TransformFunc   // transformation function.
 	HasTransform         bool            // determines if linear regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
+	IsRegularized        bool            // flag that tells whether current model uses regularization.
 	Xn                   [][]float64     // data set of points for training (if defined at random, they are uniformly present in Interval).
 	XVal                 [][]float64     // data set of point  for validation.
 	VectorSize           int             // size of vectors Xi and Wi.
@@ -622,6 +623,7 @@ func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 // WReg = (Z'Z + λI)^−1 Z'y
 //
 func (lr *LinearRegression) LearnWeightDecay() error {
+	lr.IsRegularized = true
 	lr.Lambda = math.Pow(10, float64(lr.K))
 
 	var err error
