@@ -365,13 +365,13 @@ func (lr *LinearRegression) Ein() float64 {
 // in sample error of the current linear regression model.
 //
 func (lr *LinearRegression) Ecv() float64 {
+	lr.ComputedEcv = false
 	if lr.ComputedEcv {
 		return lr.ecv
 	}
 
 	x := lr.Xn
 	y := lr.Yn
-
 	nEcv := 0
 	for out := range lr.Xn {
 		outx, outy := x[out], y[out]
@@ -628,7 +628,6 @@ func (lr *LinearRegression) EAugOutFromFile(filename string) (float64, error) {
 // WReg = (Z'Z + λI)^−1 Z'y
 //
 func (lr *LinearRegression) LearnWeightDecay() error {
-	lr.IsRegularized = true
 	lr.Lambda = math.Pow(10, float64(lr.K))
 
 	var err error

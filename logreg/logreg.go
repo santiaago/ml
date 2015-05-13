@@ -273,7 +273,6 @@ func (lr *LogisticRegression) UpdateWeights(gt []float64) error {
 // with regularization, and update WReg vector accordingly.
 //
 func (lr *LogisticRegression) LearnRegularized() error {
-	lr.IsRegularized = true
 	lr.WReg = make([]float64, lr.VectorSize)
 	lr.Lambda = math.Pow(10, float64(lr.K))
 	lr.Epochs = 0
