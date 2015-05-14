@@ -14,13 +14,15 @@ type Model interface {
 }
 
 type ModelContainer struct {
-	Model    Model
-	Name     string
-	Features []int
+	Model              Model  // the model to use.
+	Name               string // the name of the model.
+	Features           []int  // the features to filter the data.
+	TransformDimension int    // the dimensionality of the transform function if any.
+	TransformID        int    // the ID of the transform function used.
 }
 
 func NewModelContainer(m Model, n string, features []int) *ModelContainer {
-	return &ModelContainer{m, n, features}
+	return &ModelContainer{m, n, features, 0, 0}
 }
 
 type ModelContainers []*ModelContainer
