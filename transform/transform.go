@@ -405,3 +405,195 @@ func transform4D8(a []float64) ([]float64, error) {
 	b[14] = math.Abs(x1 + x2 + x3 + x4)
 	return b, nil
 }
+
+func Funcs5D() []func([]float64) ([]float64, error) {
+	return []func([]float64) ([]float64, error){
+		transform5D1,
+		transform5D2,
+		transform5D3,
+		transform5D4,
+		transform5D5,
+		transform5D6,
+		transform5D7,
+		transform5D8,
+	}
+}
+
+//    (1, x1, x2, x3, |x1 + x2 + x3 + x4|)
+func transform5D1(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 7)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = math.Abs(x1 + x2 + x3 + x4 + x5)
+	return b, nil
+}
+
+//    (1, x1, x2, x3, |x1 - x2 - x3 - x4|)
+func transform5D2(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 7)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = math.Abs(x1 - x2 - x3 - x4 - x5)
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1 * x2 * x3 * x4)
+func transform5D3(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 7)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = x1 * x2 * x3 * x4 * x5
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1 * x2 * x3 * x4, , |x1 + x2 + x3 + x4|)
+func transform5D4(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 8)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = x1 * x2 * x3 * x4 * x5
+
+	b[7] = math.Abs(x1 + x2 + x3 + x4 + x5)
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1 * x2 * x3, , |x1 - x2 - x3 - x4|)
+func transform5D5(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 8)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = x1 * x2 * x3 * x4 * x5
+	b[7] = math.Abs(x1 - x2 - x3 - x4 - x5)
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1^2 + x2^2 + x3^2 + x4^2)
+func transform5D6(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 7)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = x1*x1 + x2*x2 + x3*x3 + x4*x4 + x5*x5
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1 * x2 * x3 * x4, x1^2 + x2^2 + x3^2) +x4^2
+func transform5D7(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 8)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[6] = x1 * x2 * x3 * x4 * x5
+	b[7] = x1*x1 + x2*x2 + x3*x3 + x4*x4*x5*x5
+	return b, nil
+}
+
+//    (1, x1, x2, x3, x1 * x2 * x3 * x4, , |x1 + x2 + x3 + x4|)
+func transform5D8(a []float64) ([]float64, error) {
+	if len(a) != 6 {
+		return []float64{}, fmt.Errorf("error computing transform")
+	}
+	x1, x2, x3, x4, x5 := a[1], a[2], a[3], a[4], a[5]
+
+	b := make([]float64, 27)
+	b[0] = float64(1)
+	b[1] = x1
+	b[2] = x2
+	b[3] = x3
+	b[4] = x4
+	b[5] = x5
+
+	b[5] = x1 * x2
+	b[6] = x1 * x3
+	b[7] = x1 * x4
+	b[8] = x1 * x5
+	b[9] = x2 * x3
+	b[10] = x2 * x4
+	b[11] = x2 * x5
+	b[12] = x3 * x4
+	b[13] = x3 * x5
+	b[14] = x4 * x5
+
+	b[15] = x1 * x2 * x3 * x4 * x5
+
+	b[16] = math.Abs(x1 + x2)
+	b[17] = math.Abs(x1 + x3)
+	b[18] = math.Abs(x1 + x4)
+	b[19] = math.Abs(x1 + x5)
+	b[20] = math.Abs(x2 + x3)
+	b[21] = math.Abs(x2 + x4)
+	b[22] = math.Abs(x2 + x5)
+	b[23] = math.Abs(x3 + x4)
+	b[24] = math.Abs(x3 + x5)
+	b[25] = math.Abs(x4 + x5)
+	b[26] = math.Abs(x1 + x2 + x3 + x4 + x5)
+	return b, nil
+}
