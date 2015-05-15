@@ -514,6 +514,7 @@ func (lr *LogisticRegression) Ecv() float64 {
 		return lr.ecv
 	}
 
+	trainingPoints := lr.TrainingPoints
 	x := lr.Xn
 	y := lr.Yn
 
@@ -539,14 +540,14 @@ func (lr *LogisticRegression) Ecv() float64 {
 		if nlr.IsRegularized {
 			if err := nlr.LearnRegularized(); err != nil {
 				log.Println("LearnRegularized error", err)
-				nEcv++
+				trainingPoints--
 				continue
 			}
 			nlr.Wn = nlr.WReg
 		} else {
 			if err := nlr.Learn(); err != nil {
 				log.Println("Learn error", err)
-				nEcv++
+				trainingPoints--
 				continue
 			}
 		}

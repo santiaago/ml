@@ -368,6 +368,7 @@ func (lr *LinearRegression) Ecv() float64 {
 	if lr.ComputedEcv {
 		return lr.ecv
 	}
+	trainingPoints := lr.TrainingPoints
 	x := lr.Xn
 	y := lr.Yn
 	nEcv := 0
@@ -392,14 +393,14 @@ func (lr *LinearRegression) Ecv() float64 {
 		if lr.IsRegularized {
 			if err := nlr.LearnWeightDecay(); err != nil {
 				log.Println("LearnWeightDecay error", err)
-				nEcv++
+				trainingPoints--
 				continue
 			}
 			nlr.Wn = nlr.WReg
 		} else {
 			if err := nlr.Learn(); err != nil {
 				log.Println("Learn error", err)
-				nEcv++
+				trainingPoints--
 				continue
 			}
 		}
@@ -407,7 +408,7 @@ func (lr *LinearRegression) Ecv() float64 {
 		gi, err := nlr.Predict(outx)
 		if err != nil {
 			log.Println("Predict error", err)
-			nEcv++
+			trainingPoints--
 			continue
 		}
 
@@ -416,7 +417,7 @@ func (lr *LinearRegression) Ecv() float64 {
 		}
 
 	}
-	ecv := float64(nEcv) / float64(lr.TrainingPoints)
+	ecv := float64(nEcv) / float64(trainingPoints)
 	lr.ComputedEcv = true
 	lr.ecv = ecv
 	return ecv
