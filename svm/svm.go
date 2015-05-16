@@ -2,6 +2,7 @@
 package svm
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 
@@ -127,4 +128,46 @@ func (svm *SVM) Learn() error {
 		}
 	}
 	return nil
+}
+
+// Ein returns the in sample error of the current svm model.
+// It is the fraction of in sample points which got misclassified.
+//
+func (svm *SVM) Ein() float64 {
+
+	// XnWn
+	gInSample := make([]float64, len(svm.Xn))
+	for i := 0; i < len(svm.Xn); i++ {
+		gi, err := svm.Predict(svm.Xn[i])
+		if err != nil {
+			continue
+		}
+		gInSample[i] = ml.Sign(gi)
+	}
+
+	nEin := 0
+	for i := 0; i < len(gInSample); i++ {
+		if gInSample[i] != svm.Yn[i] {
+			nEin++
+		}
+	}
+	ein := float64(nEin) / float64(len(gInSample))
+	svm.ComputedEin = true
+	svm.ein = ein
+
+	return ein
+}
+
+// Predict returns the result of the dot product between the x vector passed as param
+// and the linear regression vector of weights.
+//
+func (svm *SVM) Predict(x []float64) (float64, error) {
+	if len(x) != len(svm.Wn) {
+		return 0, fmt.Errorf("SVM.Predict, size of x and Wn vector are different")
+	}
+	var p float64
+	for j := 0; j < len(x); j++ {
+		p += x[j] * svm.Wn[j]
+	}
+	return p, nil
 }
