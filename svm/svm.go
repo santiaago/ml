@@ -12,20 +12,22 @@ import (
 // SVM holds all the information needed to run a support vector machine algorithm.
 //
 type SVM struct {
-	TrainingPoints int         // number of training points.
-	Xn             [][]float64 // data set of points for training.
-	Yn             []float64   // output, evaluation of each Xi based on input data/ training examples.
-	Wn             []float64   // weight vector.
-	VectorSize     int         // size of vectors Xi and Wi.
-	Lambda         float64     // used in the learning algorithm.
-	Eta            float64     // used in the learning algorithm.
-	K              int         // used in the learning algorithm, it is the block size to use when running Pegasos
+	TrainingPoints    int           // number of training points.
+	TransformFunction TransformFunc // transformation function.
+	HasTransform      bool          // determines if linear regression uses a transformation funtion, in which case 'TransformationFunction' should be defined.
+	Xn                [][]float64   // data set of points for training.
+	Yn                []float64     // output, evaluation of each Xi based on input data/ training examples.
+	Wn                []float64     // weight vector.
+	VectorSize        int           // size of vectors Xi and Wi.
+	Lambda            float64       // used in the learning algorithm.
+	Eta               float64       // used in the learning algorithm.
+	K                 int           // used in the learning algorithm, it is the block size to use when running Pegasos
 }
 
 // NewSVM creates a support vector machine object.
 //
 func NewSVM() *SVM {
-	return &SVM{Lambda: 0.01, K: 1}
+	return &SVM{Lambda: 0.01, K: 1, VectorSize: 3}
 }
 
 // InitializeFromData reads a 2 dimentional array with the following format:
@@ -168,3 +170,62 @@ func (svm *SVM) Predict(x []float64) (float64, error) {
 	}
 	return p, nil
 }
+
+// Predictions returns the prediction of each row of the 'data' passed in.
+// It make a prediction by calling svm.Predict on each row of the data.
+// If it fails to make a prediction it arbitrarly sets the result to 0
+//
+func (svm *SVM) Predictions(data [][]float64) ([]float64, error) {
+	var err error
+	var predictions []float64
+	for i := 0; i < len(data); i++ {
+
+		x := []float64{}
+		// append x0
+		x = append(x, 1)
+
+		x = append(x, data[i]...)
+
+		if svm.HasTransform {
+			if x, err = svm.TransformFunction(x); err != nil {
+				return nil, err
+			}
+		}
+
+		gi, err := svm.Predict(x)
+		if err != nil {
+			predictions = append(predictions, 0)
+			continue
+		}
+
+		if ml.Sign(gi) == float64(1) {
+			predictions = append(predictions, 1)
+		} else {
+			predictions = append(predictions, 0)
+		}
+	}
+	return predictions, nil
+}
+
+// ApplyTransformation sets Transform flag to true
+// and transforms the Xn vector into Xtrans = TransformationFunction(Xn).
+// It Sets Wn size to the size of Xtrans.
+//
+func (svm *SVM) ApplyTransformation() error {
+	svm.HasTransform = true
+
+	for i := 0; i < svm.TrainingPoints; i++ {
+		if Xtrans, err := svm.TransformFunction(svm.Xn[i]); err == nil {
+			svm.Xn[i] = Xtrans
+		} else {
+			return err
+		}
+	}
+	svm.VectorSize = len(svm.Xn[0])
+	svm.Wn = make([]float64, svm.VectorSize)
+	return nil
+}
+
+// TransformFunc type is used to define transformation functions.
+//
+type TransformFunc func([]float64) ([]float64, error)
