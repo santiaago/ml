@@ -72,7 +72,7 @@ func (svm *SVM) Learn() error {
 
 	var err error
 	svm.TrainingPoints = len(svm.Xn)
-	svm.Wn = make([]float64, svm.TrainingPoints)
+	svm.Wn = make([]float64, svm.VectorSize)
 
 	for t := range svm.Xn {
 
