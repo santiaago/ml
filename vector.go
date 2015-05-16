@@ -32,3 +32,24 @@ func (v Vector) Norm() (float64, error) {
 	}
 	return math.Sqrt(v2), nil
 }
+
+// Scale performs a multiplication between a factor f and vector v.
+//
+func (v Vector) Scale(f float64) (u Vector) {
+
+	for i := range v {
+		u = append(u, v[i]*f)
+	}
+	return
+}
+
+func (v Vector) Add(u Vector) (Vector, error) {
+	if len(v) != len(u) {
+		return nil, fmt.Errorf("vectors should have same size")
+	}
+	var w Vector
+	for i := range v {
+		w = append(w, v[i]+u[i])
+	}
+	return w, nil
+}
