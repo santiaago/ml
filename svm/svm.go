@@ -25,7 +25,7 @@ type SVM struct {
 // NewSVM creates a support vector machine object.
 //
 func NewSVM() *SVM {
-	return &SVM{K: 1}
+	return &SVM{Lambda: 0.01, K: 1}
 }
 
 // InitializeFromData reads a 2 dimentional array with the following format:
@@ -152,9 +152,6 @@ func (svm *SVM) Ein() float64 {
 		}
 	}
 	ein := float64(nEin) / float64(len(gInSample))
-	svm.ComputedEin = true
-	svm.ein = ein
-
 	return ein
 }
 
