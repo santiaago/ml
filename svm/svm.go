@@ -3,6 +3,7 @@ package svm
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 
@@ -155,6 +156,54 @@ func (svm *SVM) Ein() float64 {
 	}
 	ein := float64(nEin) / float64(len(gInSample))
 	return ein
+}
+
+// Ecv returns the leave one out cross validation
+// in sample error of the current svm model.
+//
+func (svm *SVM) Ecv() float64 {
+
+	trainingPoints := svm.TrainingPoints
+	x := svm.Xn
+	y := svm.Yn
+	nEcv := 0
+	for out := range svm.Xn {
+		fmt.Printf("\rLeave %v out of %v", out, len(svm.Xn))
+		outx, outy := x[out], y[out]
+		nsvm := NewSVM()
+		*nsvm = *svm
+		nsvm.TrainingPoints = svm.TrainingPoints - 1
+
+		nsvm.Xn = [][]float64{}
+		nsvm.Yn = []float64{}
+		for i := range x {
+			if i == out {
+				continue
+			}
+			nsvm.Xn = append(nsvm.Xn, x[i])
+			nsvm.Yn = append(nsvm.Yn, y[i])
+		}
+
+		if err := nsvm.Learn(); err != nil {
+			log.Println("Learn error", err)
+			trainingPoints--
+			continue
+		}
+
+		gi, err := nsvm.Predict(outx)
+		if err != nil {
+			log.Println("Predict error", err)
+			trainingPoints--
+			continue
+		}
+
+		if ml.Sign(gi) != outy {
+			nEcv++
+		}
+
+	}
+	ecv := float64(nEcv) / float64(trainingPoints)
+	return ecv
 }
 
 // Predict returns the result of the dot product between the x vector passed as param

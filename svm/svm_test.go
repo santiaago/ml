@@ -1,6 +1,7 @@
 package svm
 
 import (
+	"math"
 	"strings"
 	"testing"
 )
@@ -144,6 +145,46 @@ func TestEin(t *testing.T) {
 		want := tt.expectedEin
 		if got != want {
 			t.Errorf("Ein is not correct, got %v, want %v", got, want)
+		}
+	}
+}
+
+func TestEcv(t *testing.T) {
+	svm := NewSVM()
+	svm.TrainingPoints = 6
+	svm.Xn = [][]float64{
+		{1, -0.71, 0.331},
+		{1, 0.27, -0.95},
+		{1, -0.37, 0.12},
+		{1, -0.49, -0.52},
+		{1, 0.53, -0.11},
+		{1, 0.62, 0.9},
+	}
+
+	tests := []struct {
+		Y           []float64
+		expectedEcv float64
+	}{
+		{
+			Y:           []float64{1, 1, 1, 1, 1, 1},
+			expectedEcv: 0,
+		},
+		{
+			Y:           []float64{-1, -1, -1, -1, -1, -1},
+			expectedEcv: 0,
+		},
+		{
+			Y:           []float64{-1, 1, -1, 1, -1, 1},
+			expectedEcv: 0.333,
+		},
+	}
+
+	for i, tt := range tests {
+		svm.Yn = tt.Y
+		got := svm.Ecv()
+		want := tt.expectedEcv
+		if math.Abs(got-want) > epsilon {
+			t.Errorf("test %v: got Ecv = %v, want %v", i, got, want)
 		}
 	}
 }
