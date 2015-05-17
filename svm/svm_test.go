@@ -63,7 +63,7 @@ func TestLearn(t *testing.T) {
 	if err != nil {
 		t.Errorf("got %v, expected no error", err)
 	}
-	expectedWn := []float64{0.393, -1.967, 0.983}
+	expectedWn := []float64{-0.00499, -4.0761, 2.29460}
 	if !equal(expectedWn, svm.Wn) {
 		t.Errorf("Weight vector is not correct: got %v, want %v", svm.Wn, expectedWn)
 	}
@@ -175,7 +175,7 @@ func TestEcv(t *testing.T) {
 		},
 		{
 			Y:           []float64{-1, 1, -1, 1, -1, 1},
-			expectedEcv: 0.333,
+			expectedEcv: 0.5,
 		},
 	}
 

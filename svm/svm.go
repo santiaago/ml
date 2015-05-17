@@ -23,12 +23,13 @@ type SVM struct {
 	Lambda            float64       // used in the learning algorithm.
 	Eta               float64       // used in the learning algorithm.
 	K                 int           // used in the learning algorithm, it is the block size to use when running Pegasos
+	T                 int           // number of iterations that Pegasos should run.
 }
 
 // NewSVM creates a support vector machine object.
 //
 func NewSVM() *SVM {
-	return &SVM{Lambda: 0.01, K: 1, VectorSize: 3}
+	return &SVM{Lambda: 0.01, K: 1, VectorSize: 3, T: 1000}
 }
 
 // InitializeFromData reads a 2 dimentional array with the following format:
@@ -77,7 +78,7 @@ func (svm *SVM) Learn() error {
 	svm.TrainingPoints = len(svm.Xn)
 	svm.Wn = make([]float64, svm.VectorSize)
 
-	for t := range svm.Xn {
+	for t := 0; t <= svm.T; t++ {
 
 		// choose At where |At| = k, uniformly at random
 		var At []int // vector of the selected indexes of size K
