@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+const epsilon float64 = 0.001
+
 // Vector is a type to make vector operations.
 //
 type Vector []float64
@@ -43,6 +45,8 @@ func (v Vector) Scale(f float64) (u Vector) {
 	return
 }
 
+// Add performs a element by element adition of two vectors.
+//
 func (v Vector) Add(u Vector) (Vector, error) {
 	if len(v) != len(u) {
 		return nil, fmt.Errorf("vectors should have same size")
@@ -52,4 +56,18 @@ func (v Vector) Add(u Vector) (Vector, error) {
 		w = append(w, v[i]+u[i])
 	}
 	return w, nil
+}
+
+// Equal performs a element by element comparison to check if
+// two vectors are equal
+func (v Vector) equal(u Vector) bool {
+	if len(v) != len(u) {
+		return false
+	}
+	for i := range v {
+		if math.Abs(v[i]-u[i]) > epsilon {
+			return false
+		}
+	}
+	return true
 }

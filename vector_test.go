@@ -89,3 +89,34 @@ func TestVectorNorm(t *testing.T) {
 		}
 	}
 }
+
+func TestVectorScale(t *testing.T) {
+	tests := []struct {
+		v    Vector
+		f    float64
+		want Vector
+	}{
+		{
+			v:    []float64{1, 0, 0},
+			f:    0.1,
+			want: []float64{0.1, 0, 0},
+		},
+		{
+			v:    []float64{1, 1, 1},
+			f:    0,
+			want: []float64{0, 0, 0},
+		},
+		{
+			v:    []float64{0.1, 0.2, 0.3},
+			f:    10,
+			want: []float64{1, 2, 3},
+		},
+	}
+
+	for i, tt := range tests {
+		got := tt.v.Scale(tt.f)
+		if !tt.want.equal(got) {
+			t.Errorf("test %v: got %v, want %v", i, got, tt.want)
+		}
+	}
+}

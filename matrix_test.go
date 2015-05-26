@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-const epsilon float64 = 0.001
-
 func TestIdentity(t *testing.T) {
 
 	tests := []struct {
