@@ -120,3 +120,40 @@ func TestVectorScale(t *testing.T) {
 		}
 	}
 }
+
+func TestVectorAdd(t *testing.T) {
+	tests := []struct {
+		v    Vector
+		u    Vector
+		want Vector
+		err  string
+	}{
+		{
+			v:    []float64{1, 0, 0},
+			u:    []float64{1, 1, 1},
+			want: []float64{2, 1, 1},
+		},
+		{
+			v:    []float64{1, 1, 1},
+			u:    []float64{1, 1, 1},
+			want: []float64{2, 2, 2},
+		},
+		{
+			v:   []float64{1, 1, 1},
+			u:   []float64{1, 1},
+			err: "size",
+		},
+	}
+
+	for i, tt := range tests {
+		if got, err := tt.v.Add(tt.u); err != nil {
+			if !strings.Contains(errstring(err), tt.err) && len(tt.err) == 0 {
+				t.Errorf("test %d: got error %v, want %v", i, err, tt.err)
+			} else if len(tt.err) == 0 {
+				t.Errorf("Error computing Add")
+			}
+		} else if !tt.want.equal(got) {
+			t.Errorf("test %v: got %v, want %v", i, got, tt.want)
+		}
+	}
+}
